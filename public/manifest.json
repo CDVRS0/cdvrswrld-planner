@@ -1,0 +1,16 @@
+{
+  "name": "CDVRSWRLD Planner",
+  "short_name": "CDVRSWRLD",
+  "description": "Create Your World — Weekly Planner",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#1E90FF",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
