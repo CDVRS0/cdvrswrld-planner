@@ -1,192 +1,315 @@
-export const DAYS_CONFIG = [
+const socialPlatforms = ['Instagram', 'Snapchat', 'TikTok', 'YouTube'];
+
+const socialAccounts = ['CDVRS', 'CDVRSWRLD', 'CDVLabs', 'CDVRS Sports', ...socialPlatforms];
+
+const baseNatureTasks = [
+  'How are you feeling?',
+  'Energy check',
+  "What's on your mind?",
+  'Nature / physical check',
+  "Today's personal intention",
+];
+
+const baseEndOfDayTasks = [
+  'What got done?',
+  'What did not?',
+  'What am I waiting on?',
+  'What needs carrying forward?',
+  'What did I learn?',
+  'Nature OS reflection',
+  "Tomorrow's first priority",
+];
+
+function dailyBlocks(day) {
+  const blocks = [
+    {
+      stepKey: 'nature',
+      time: '01',
+      label: 'Nature OS',
+      agent: 'Nature Agent',
+      layer: 'nature',
+      tasks: [
+        ...baseNatureTasks,
+        'Save the morning reflection',
+      ],
+    },
+    {
+      stepKey: 'plan',
+      time: '02',
+      label: "Today's Plan",
+      agent: 'Daily Planning Agent',
+      layer: 'work',
+      tasks: [
+        'Main objective',
+        day.priorityOne,
+        day.priorityTwo,
+        day.priorityThree,
+        'Scheduled commitments',
+        'Waiting on',
+        'Quick tasks',
+      ],
+    },
+    {
+      stepKey: 'work',
+      time: '03',
+      label: 'Work',
+      agent: 'Work Agent',
+      layer: 'work',
+      tasks: [
+        'Grind & Ghost',
+        'Enquiries',
+        'Clients',
+        'Distribution',
+        'Publishing',
+        'Deals / contracts',
+        'Revenue',
+        'Waiting on',
+        'CDVRS music',
+        'CDVLabs',
+        'Website',
+        'CDVRSWRLD projects',
+        ...(day.sports?.length ? day.sports : []),
+      ],
+    },
+    {
+      stepKey: 'social',
+      time: '04',
+      label: 'Social Media OS',
+      agent: 'Social Agent',
+      layer: 'social',
+      tasks: [
+        `Today's content theme: ${day.contentTheme}`,
+        'Create the content pool',
+        'Adapt for Instagram',
+        'Adapt for TikTok',
+        'Adapt for YouTube / Shorts',
+        'Adapt for Snapchat / Stories',
+        'Publish',
+        'Record what was posted',
+        ...socialAccounts.map(account => `${account} check`),
+      ],
+    },
+    {
+      stepKey: 'creative',
+      time: '05',
+      label: 'Creative',
+      agent: 'Creative Agent',
+      layer: 'work',
+      tasks: [
+        day.creativeFocus,
+        'Current beats',
+        'Songs',
+        'Production',
+        'Writing',
+        'Recording',
+        'Beat store',
+        'Releases',
+        'Visuals',
+        'Current creative projects',
+      ],
+    },
+    {
+      stepKey: 'reading',
+      time: '06A',
+      label: 'Reading',
+      agent: 'Reading Guide',
+      layer: 'nature',
+      tasks: [
+        'Current book',
+        "Today's reading",
+        'Notes',
+        'Questions',
+        'Main ideas',
+        'Reflection',
+      ],
+    },
+    {
+      stepKey: 'bible',
+      time: '06B',
+      label: 'Bible Study',
+      agent: 'Bible Study Guide',
+      layer: 'nature',
+      tasks: [
+        'Book',
+        'Chapter / passage',
+        'Read',
+        'Ask',
+        'What stands out?',
+        'What does this reveal?',
+        'What am I being challenged to consider?',
+        'How can I apply this?',
+        'Prayer',
+      ],
+    },
+    {
+      stepKey: 'handoff',
+      time: '07',
+      label: 'AI Handoff',
+      agent: 'Shared Memory Layer',
+      layer: 'review',
+      tasks: [
+        'Capture useful context for the next agent',
+        'Flag carried-over work',
+        'Name state/rhythm constraints',
+        'Record what should be remembered tomorrow',
+      ],
+    },
+    {
+      stepKey: 'review',
+      time: '08',
+      label: 'Evening Review',
+      agent: 'Reflection Agent',
+      layer: 'review',
+      tasks: baseEndOfDayTasks,
+    },
+  ];
+
+  return blocks;
+}
+
+const dayBlueprints = [
   {
-    name: 'Monday', short: 'Mon', emoji: '🧠',
-    theme: 'CEO Admin Day', focus: 'System control + planning + organisation',
-    blocks: [
-      {
-        time: 'Morning', label: 'Morning Routine', emoji: '🌅',
-        tasks: ['Bible / reading', 'Walk → studio / gym', 'Gym + spa + shower'],
-      },
-      {
-        time: '11:00am – 2:00pm', label: 'All Business Admin', emoji: '🧠',
-        tasks: ['CDVRS planning', 'CDV Labs system check', 'Grind & Ghost updates', 'Repeat UK', 'Publishing', 'Growth & Greatness planning', 'CDVRS Sports planning', 'Create Your World direction', 'No Pressure pipeline review'],
-      },
-      {
-        time: '2:00pm – 3:00pm', label: 'Break', emoji: '🧩',
-        tasks: ['Break / food / reset'],
-      },
-      {
-        time: '3:00pm – 6:00pm', label: 'Strategy Block', emoji: '📊',
-        tasks: ['Content planning (all brands)', 'Release planning (music)', 'Artist pipeline planning (No Pressure)', 'Weekly targets setup'],
-      },
-      {
-        time: '6:00pm – 7:00pm', label: 'Break', emoji: '🧩',
-        tasks: ['Break / food / reset'],
-      },
-      {
-        time: '7:00pm – 10:30pm', label: 'Light Execution', emoji: '⚡',
-        tasks: ['Emails / outreach', 'Scheduling content', 'Organising beats', 'Admin cleanup'],
-      },
-    ],
+    name: 'Monday',
+    short: 'Mon',
+    emoji: 'Mind',
+    theme: 'System Control',
+    focus: 'Admin, planning, organisation, and deciding what matters this week.',
+    priorityOne: 'Weekly intention + priorities',
+    priorityTwo: 'CDVRS / G&G admin',
+    priorityThree: 'Social content plan',
+    contentTheme: 'Set the weekly content theme',
+    creativeFocus: 'Creative pipeline review',
+    sports: ['CDVRS Sports planning', 'CD4Q check-in', 'Events / partnerships'],
   },
   {
-    name: 'Tuesday', short: 'Tue', emoji: '🎧',
-    theme: 'CDV Labs Day', focus: 'Beat creation + money generation',
-    blocks: [
-      {
-        time: 'Morning', label: 'Morning Routine', emoji: '🌅',
-        tasks: ['Bible / reading', 'Walk', 'Gym + spa'],
-      },
-      {
-        time: '11:00am – 3:00pm', label: 'Beat Creation Block', emoji: '🎵',
-        tasks: ['Make 3–5 beats', 'Film studio content while cooking up', 'Save everything to CDV Labs'],
-      },
-      {
-        time: '3:00pm – 4:00pm', label: 'Break', emoji: '🧩',
-        tasks: ['Break'],
-      },
-      {
-        time: '4:00pm – 7:00pm', label: 'Content Block', emoji: '🎥',
-        tasks: ['YouTube beat video', 'TikToks', 'Reels', 'Studio clips'],
-      },
-      {
-        time: '7:00pm – 10:30pm', label: 'Upload + Monetise', emoji: '💰',
-        tasks: ['Upload beats', 'BeatStars optimisation', 'Schedule content'],
-      },
-    ],
+    name: 'Tuesday',
+    short: 'Tue',
+    emoji: 'Audio',
+    theme: 'Production + Monetise',
+    focus: 'Beat creation, store updates, and content from the studio.',
+    priorityOne: 'Make 3-5 beats',
+    priorityTwo: 'Film studio content',
+    priorityThree: 'Upload / optimise beat store',
+    contentTheme: 'Studio process content',
+    creativeFocus: 'Production',
   },
   {
-    name: 'Wednesday', short: 'Wed', emoji: '🎬',
-    theme: 'YouTube + No Pressure', focus: 'Growth + content + artist session',
-    blocks: [
-      {
-        time: 'Morning', label: 'Morning Routine', emoji: '🌅',
-        tasks: ['Bible / reading', 'Gym + spa'],
-      },
-      {
-        time: '11:00am – 3:00pm', label: 'YouTube Block', emoji: '🎥',
-        tasks: ['YouTube beat videos', 'Studio cook-up content'],
-      },
-      {
-        time: '3:00pm – 4:00pm', label: 'Break', emoji: '🧩',
-        tasks: ['Break'],
-      },
-      {
-        time: '4:00pm – 7:00pm', label: 'Flex Slot', emoji: '🎬',
-        tasks: ['CDV Labs beats', 'YouTube editing', 'Uploads', 'Admin catch-up', 'No Pressure studio episode (if booked)', 'Beat creation with artist', 'Content filming'],
-      },
-      {
-        time: '9:30pm – 11:00pm', label: 'Basketball Scrimmage', emoji: '🏀',
-        tasks: ['Basketball scrimmage'],
-      },
-    ],
+    name: 'Wednesday',
+    short: 'Wed',
+    emoji: 'Video',
+    theme: 'YouTube + Artist Development',
+    focus: 'Video output, artist work, and midweek adjustments.',
+    priorityOne: 'YouTube beat video',
+    priorityTwo: 'No Pressure / artist pipeline',
+    priorityThree: 'Midweek blocker clear',
+    contentTheme: 'YouTube clips + studio edits',
+    creativeFocus: 'Writing / recording / artist development',
+    sports: ['Basketball scrimmage'],
   },
   {
-    name: 'Thursday', short: 'Thu', emoji: '🏀',
-    theme: 'CDVRS Sports Day', focus: 'Community + sports + organisation',
-    blocks: [
-      {
-        time: 'Morning', label: 'Morning Routine', emoji: '🌅',
-        tasks: ['Bible / reading', 'Gym + spa'],
-      },
-      {
-        time: '11:00am – 2:00pm', label: 'Light Beats / Studio', emoji: '🎧',
-        tasks: ['Light beats / studio maintenance'],
-      },
-      {
-        time: '2:00pm – 3:00pm', label: 'CDVRS Sports Core', emoji: '🏀',
-        tasks: ['Plan runs', 'Organise players', 'Content ideas', 'Community outreach'],
-      },
-      {
-        time: '3:00pm – 4:00pm', label: 'Break', emoji: '🧩',
-        tasks: ['Break'],
-      },
-      {
-        time: '4:00pm – 7:00pm', label: 'Brand + Growth Block', emoji: '🧠',
-        tasks: ['Growth & Greatness', 'Create Your World brand work', 'CDV Labs check-in'],
-      },
-      {
-        time: '8:00pm – 9:00pm', label: 'Basketball Run', emoji: '🏀',
-        tasks: ['Basketball run'],
-      },
-    ],
+    name: 'Thursday',
+    short: 'Thu',
+    emoji: 'Hoop',
+    theme: 'Community + Sports',
+    focus: 'CDVRS Sports, community, and brand growth.',
+    priorityOne: 'CDVRS Sports core work',
+    priorityTwo: 'Community / player outreach',
+    priorityThree: 'Brand growth block',
+    contentTheme: 'Sports + community visibility',
+    creativeFocus: 'Light beats / studio maintenance',
+    sports: ['CDVRS Sports', 'CD4Q', 'Events', 'Partnerships', 'Basketball run'],
   },
   {
-    name: 'Friday', short: 'Fri', emoji: '🎤',
-    theme: 'Artist Dev Day', focus: 'You as artist + No Pressure development',
-    blocks: [
-      {
-        time: 'Morning', label: 'Morning Routine', emoji: '🌅',
-        tasks: ['Bible / reading', 'Gym + spa'],
-      },
-      {
-        time: '11:00am – 3:00pm', label: 'CDVRS Artist Work', emoji: '🎧',
-        tasks: ['Writing', 'Recording', 'Vocals'],
-      },
-      {
-        time: '3:00pm – 4:00pm', label: 'Break', emoji: '🧩',
-        tasks: ['Break'],
-      },
-      {
-        time: '4:00pm – 5:00pm', label: 'No Pressure Dev', emoji: '🧑🏾‍🎤',
-        tasks: ['Feedback', 'Scouting', 'Planning sessions'],
-      },
-      {
-        time: '5:00pm – 6:00pm', label: 'CYW Brand Work', emoji: '🧠',
-        tasks: ['Create Your World brand work'],
-      },
-      {
-        time: '6:00pm – 7:00pm', label: 'Business Review', emoji: '📊',
-        tasks: ['Full business review'],
-      },
-    ],
+    name: 'Friday',
+    short: 'Fri',
+    emoji: 'Mic',
+    theme: 'Artist + Business Review',
+    focus: 'Artist work, business review, and week-end decisions.',
+    priorityOne: 'CDVRS artist work',
+    priorityTwo: 'No Pressure development',
+    priorityThree: 'Business / revenue review',
+    contentTheme: 'Artist-facing content',
+    creativeFocus: 'Writing / recording / vocals',
   },
   {
-    name: 'Saturday', short: 'Sat', emoji: '🚀',
-    theme: 'High Output Day', focus: 'Volume + execution',
-    blocks: [
-      {
-        time: 'Morning', label: 'Morning Routine', emoji: '🌅',
-        tasks: ['Bible / reading', 'Gym + spa'],
-      },
-      {
-        time: '11:00am – 3:00pm', label: 'Beat Production', emoji: '🎵',
-        tasks: ['Beat production (CDV Labs)'],
-      },
-      {
-        time: '3:00pm – 4:00pm', label: 'Break', emoji: '🧩',
-        tasks: ['Break'],
-      },
-      {
-        time: '4:00pm – 7:00pm', label: 'Content Batch', emoji: '🎥',
-        tasks: ['YouTube videos', 'TikToks', 'Reels', 'Shorts'],
-      },
-      {
-        time: '7:00pm – 10:30pm', label: 'Upload + Schedule', emoji: '📦',
-        tasks: ['Upload everything', 'Schedule week ahead', 'Collaborations'],
-      },
-    ],
+    name: 'Saturday',
+    short: 'Sat',
+    emoji: 'Rocket',
+    theme: 'High Output',
+    focus: 'Batching, uploads, scheduling, and visible momentum.',
+    priorityOne: 'Batch production',
+    priorityTwo: 'Content batch',
+    priorityThree: 'Upload + schedule',
+    contentTheme: 'Batch content for all accounts',
+    creativeFocus: 'Production volume + visuals',
   },
   {
-    name: 'Sunday', short: 'Sun', emoji: '🧘',
-    theme: 'Reset + Strategy', focus: 'Recovery + thinking + planning',
-    blocks: [
-      {
-        time: 'Morning', label: 'Morning Routine', emoji: '🌅',
-        tasks: ['Bible / reading', 'Walk / recovery'],
-      },
-      {
-        time: '10:00am – 12:00pm', label: 'Weekly Review', emoji: '📊',
-        tasks: ['CDVRS performance', 'CDV Labs sales', 'No Pressure pipeline', 'Content output', 'Revenue'],
-      },
-      {
-        time: '12:00pm – 8:00pm', label: 'Strategy Block', emoji: '🧠',
-        tasks: ['Plan next week', 'Set targets', 'Fix weak areas', 'Plan releases'],
-      },
-      {
-        time: 'Evening', label: 'Rest + Reset', emoji: '🌙',
-        tasks: ['Rest', 'Family / downtime', 'Reset mentally'],
-      },
-    ],
+    name: 'Sunday',
+    short: 'Sun',
+    emoji: 'Reset',
+    theme: 'Reset + Strategy',
+    focus: 'Recovery, review, and setting next week up properly.',
+    priorityOne: 'Weekly review',
+    priorityTwo: 'Nature OS reset',
+    priorityThree: 'Plan next week',
+    contentTheme: 'Reflection / week recap',
+    creativeFocus: 'Release planning',
+  },
+];
+
+export const DAYS_CONFIG = dayBlueprints.map(day => ({
+  ...day,
+  blocks: dailyBlocks(day),
+}));
+
+export const WEEKLY_OS_CONFIG = [
+  {
+    key: 'intention',
+    label: 'Weekly Intention',
+    emoji: 'Compass',
+    description: 'What is this week actually about?',
+    items: ['Define the week in one sentence', 'Choose the main win', 'Name the constraint'],
+  },
+  {
+    key: 'nature',
+    label: 'Nature',
+    emoji: 'Globe',
+    description: 'State, rhythm, alignment, and recovery.',
+    items: ['Spiritual focus', 'Physical focus', 'Rest', 'Personal development'],
+  },
+  {
+    key: 'work',
+    label: 'Work',
+    emoji: 'Briefcase',
+    description: 'The work that deserves priority.',
+    items: ['G&G priorities', 'CDVRS priorities', 'Creative priorities', 'Business / revenue priorities'],
+  },
+  {
+    key: 'social',
+    label: 'Social',
+    emoji: 'Phone',
+    description: 'Visibility across the ecosystem.',
+    items: ['Weekly content theme', 'Posts required', 'Campaigns / releases', 'Accounts needing attention'],
+  },
+  {
+    key: 'projects',
+    label: 'Projects',
+    emoji: 'Stack',
+    description: 'Current builds, milestones, and blockers.',
+    items: ['Active projects', 'Next milestone', 'Blockers'],
+  },
+  {
+    key: 'people',
+    label: 'People',
+    emoji: 'People',
+    description: 'Responses, waiting-on, and outreach.',
+    items: ['Who needs a response?', 'Who am I waiting on?', 'Who do I need to contact?'],
+  },
+  {
+    key: 'review',
+    label: 'Weekly Review',
+    emoji: 'Loop',
+    description: 'Feedback into next week and Nature OS.',
+    items: ['Wins', 'Problems', 'Lessons', 'What consumed too much time?', 'What should change next week?'],
   },
 ];

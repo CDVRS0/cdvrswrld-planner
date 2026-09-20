@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { DAYS_CONFIG } from '../data/days';
+import { useState, useEffect, useMemo } from 'react';
+import { DAYS_CONFIG, WEEKLY_OS_CONFIG } from '../data/days';
 
-const STORAGE_KEY = 'cdvrs_planner_v3';
+const STORAGE_KEY = 'cdvrs_planner_v5';
 
 function getWeekStart(offset = 0) {
   const d = new Date();
@@ -24,14 +24,92 @@ function initWeekData(weekStart) {
     const dk = dateKey(d);
     days[dk] = {
       blocks: cfg.blocks.map(b => ({
+        stepKey: b.stepKey,
         time: b.time,
         label: b.label,
-        emoji: b.emoji,
+        agent: b.agent,
+        layer: b.layer,
         tasks: b.tasks.map(t => ({ text: t, done: false })),
       })),
+      record: {
+        nature: {
+          feeling: '',
+          energy: '',
+          mind: '',
+          physical: '',
+          intention: '',
+          ask: '',
+          reflection: '',
+        },
+        plan: {
+          objective: '',
+          morning: '',
+          afternoon: '',
+          evening: '',
+          ask: '',
+        },
+        work: {
+          focus: '',
+          firstAction: '',
+          waitingOn: '',
+          ask: '',
+        },
+        social: {
+          content: '',
+          adapt: '',
+          published: '',
+          results: '',
+          ask: '',
+        },
+        creative: {
+          focus: '',
+          project: '',
+          notes: '',
+          ask: '',
+        },
+        reading: {
+          book: 'Seat of the Soul',
+          pages: '',
+          notes: '',
+          questions: '',
+          ask: '',
+        },
+        bible: {
+          book: '',
+          chapter: '',
+          notes: '',
+          reflection: '',
+          prayer: '',
+          ask: '',
+        },
+        handoff: {
+          summary: '',
+          carryForward: '',
+          remember: '',
+        },
+        review: {
+          done: '',
+          notDone: '',
+          waitingOn: '',
+          carryForward: '',
+          learned: '',
+          tomorrow: '',
+        },
+      },
     };
   });
-  return { goals: [], notes: '', days };
+  const weeklySections = WEEKLY_OS_CONFIG.map(section => ({
+    key: section.key,
+    label: section.label,
+    emoji: section.emoji,
+    description: section.description,
+    items: section.items.map(text => ({ text, done: false })),
+  }));
+  return {
+    notes: '',
+    weeklySections,
+    days,
+  };
 }
 
 function loadFromStorage() {
@@ -49,23 +127,22 @@ export function usePlanner() {
   const wk = dateKey(weekStart);
 
   useEffect(() => {
-    if (!weeks[wk]) {
-      setWeeks(prev => {
-        const next = { ...prev, [wk]: initWeekData(weekStart) };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ weeks: next }));
-        return next;
-      });
-    }
-  }, [wk]);
-
-  useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ weeks }));
   }, [weeks]);
 
-  const week = weeks[wk] || initWeekData(weekStart);
+  const week = useMemo(() => weeks[wk] || initWeekData(weekStart), [weekStart, weeks, wk]);
 
   function updateWeek(fn) {
     setWeeks(prev => ({ ...prev, [wk]: fn(prev[wk] || initWeekData(weekStart)) }));
+  }
+
+  function updateWeeklySection(sectionKey, fn) {
+    updateWeek(w => ({
+      ...w,
+      weeklySections: w.weeklySections.map(section =>
+        section.key === sectionKey ? fn(section) : section
+      ),
+    }));
   }
 
   function updateDay(dk, fn) {
@@ -81,10 +158,31 @@ export function usePlanner() {
 
   return {
     weekStart, weekOffset, setWeekOffset, wk, week,
-    addGoal: t => updateWeek(w => ({ ...w, goals: [...w.goals, { text: t, done: false }] })),
-    toggleGoal: i => updateWeek(w => ({ ...w, goals: w.goals.map((g, idx) => idx === i ? { ...g, done: !g.done } : g) })),
-    deleteGoal: i => updateWeek(w => ({ ...w, goals: w.goals.filter((_, idx) => idx !== i) })),
+    addWeeklyItem: (sectionKey, text) => updateWeeklySection(sectionKey, section => ({
+      ...section,
+      items: [...section.items, { text, done: false }],
+    })),
+    toggleWeeklyItem: (sectionKey, itemIndex) => updateWeeklySection(sectionKey, section => ({
+      ...section,
+      items: section.items.map((item, idx) =>
+        idx === itemIndex ? { ...item, done: !item.done } : item
+      ),
+    })),
+    deleteWeeklyItem: (sectionKey, itemIndex) => updateWeeklySection(sectionKey, section => ({
+      ...section,
+      items: section.items.filter((_, idx) => idx !== itemIndex),
+    })),
     setNotes: v => updateWeek(w => ({ ...w, notes: v })),
+    updateDayRecord: (dk, sectionKey, field, value) => updateDay(dk, d => ({
+      ...d,
+      record: {
+        ...d.record,
+        [sectionKey]: {
+          ...(d.record?.[sectionKey] || {}),
+          [field]: value,
+        },
+      },
+    })),
     toggleTask: (dk, bi, ti) => updateBlock(dk, bi, b => ({
       ...b, tasks: b.tasks.map((t, i) => i === ti ? { ...t, done: !t.done } : t),
     })),
@@ -95,7 +193,7 @@ export function usePlanner() {
       ...b, tasks: b.tasks.filter((_, i) => i !== ti),
     })),
     addBlock: (dk, time, label) => updateDay(dk, d => ({
-      ...d, blocks: [...d.blocks, { time, label, emoji: '📌', tasks: [] }],
+      ...d, blocks: [...d.blocks, { stepKey: 'custom', time, label, agent: 'Custom', layer: 'work', tasks: [] }],
     })),
     deleteBlock: (dk, bi) => updateDay(dk, d => ({
       ...d, blocks: d.blocks.filter((_, i) => i !== bi),
