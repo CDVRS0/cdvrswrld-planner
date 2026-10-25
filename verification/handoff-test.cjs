@@ -21,9 +21,9 @@ const saved = page => page.locator('.cloud-panel [role=status]').filter({ hasTex
  await page.getByRole('button', { name: 'Next week', exact: true }).click(); await page.getByRole('button', { name: /^Mon System Control/ }).click();
  const incoming = page.locator('.dashboard-card').filter({ has: page.getByRole('heading', { name: 'Your approved handoff' }) });
  await incoming.locator('label').filter({ hasText: 'Acceptance reminder for Monday' }).waitFor(); await incoming.locator('label').filter({ hasText: 'Acceptance carry action' }).waitFor();
- await incoming.getByRole('checkbox').last().check(); await saved(page); await page.reload(); await saved(page);
+ await incoming.locator('label').filter({ hasText: 'Acceptance carry action' }).getByRole('checkbox').check(); await saved(page); await page.reload(); await saved(page);
  await page.getByRole('button', { name: 'Next week', exact: true }).click(); await page.getByRole('button', { name: /^Mon System Control/ }).click();
- assert.equal(await page.locator('.dashboard-card').filter({ has: page.getByRole('heading', { name: 'Your approved handoff' }) }).getByRole('checkbox').last().isChecked(), true);
+ assert.equal(await page.locator('.dashboard-card').filter({ has: page.getByRole('heading', { name: 'Your approved handoff' }) }).locator('label').filter({ hasText: 'Acceptance carry action' }).getByRole('checkbox').isChecked(), true);
  await page.getByRole('button', { name: 'Previous week', exact: true }).click(); await page.getByRole('button', { name: /^Sun/ }).click();
  await page.getByRole('button', { name: 'Review tomorrow’s carry-forward', exact: true }).click(); assert.equal(await page.locator('.handoff-candidates label').filter({ hasText: 'Acceptance carry action' }).count(), 0); await page.getByRole('button', { name: 'Close preview', exact: true }).click();
  await page.getByRole('button', { name: 'Review handoff to CDVRS AI', exact: true }).click(); await page.getByLabel('Exact handoff message', { exact: true }).fill('Acceptance handoff: help me continue my music work tomorrow.');
