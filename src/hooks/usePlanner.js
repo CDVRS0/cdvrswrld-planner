@@ -13,7 +13,7 @@ function getWeekStart(offset = 0) {
 }
 
 export function dateKey(d) {
-  return d.toISOString().slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function initWeekData(weekStart) {
@@ -157,7 +157,7 @@ export function usePlanner() {
   }
 
   return {
-    weekStart, weekOffset, setWeekOffset, wk, week,
+    weekStart, weekOffset, setWeekOffset, wk, week, weeks, setWeeks,
     addWeeklyItem: (sectionKey, text) => updateWeeklySection(sectionKey, section => ({
       ...section,
       items: [...section.items, { text, done: false }],

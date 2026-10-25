@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { DAYS_CONFIG } from './data/days';
 import { usePlanner, dateKey } from './hooks/usePlanner';
 import './App.css';
+import { useCloudPlanner } from './hooks/useCloudPlanner';
+import CloudPanel from './CloudPanel';
+import DailyDashboard from './DailyDashboard';
 
 const FLOW_STEPS = [
   { key: 'nature', label: 'Nature', number: '01' },
@@ -106,16 +109,6 @@ function getTasks(week) {
   return Object.values(week.days).flatMap(day => day.blocks.flatMap(block => block.tasks));
 }
 
-function dayStats(dayData) {
-  const tasks = dayData.blocks.flatMap(block => block.tasks);
-  const done = tasks.filter(task => task.done).length;
-  return {
-    done,
-    total: tasks.length,
-    pct: tasks.length === 0 ? 0 : Math.round((done / tasks.length) * 100),
-  };
-}
-
 function CheckItem({ item, onToggle, onDelete }) {
   return (
     <div className={`check-item${item.done ? ' done' : ''}`}>
@@ -131,9 +124,9 @@ function RecordField({ label, value, onChange, singleLine }) {
     <label className="record-field">
       <span>{label}</span>
       {singleLine ? (
-        <input value={value || ''} onChange={e => onChange(e.target.value)} />
+        <input aria-label={label} value={value || ''} onChange={e => onChange(e.target.value)} />
       ) : (
-        <textarea value={value || ''} onChange={e => onChange(e.target.value)} />
+        <textarea aria-label={label} value={value || ''} onChange={e => onChange(e.target.value)} />
       )}
     </label>
   );
@@ -181,7 +174,7 @@ function GuidedStep({ block, dayData, dk, p }) {
   };
 
   return (
-    <section className={`guided-step ${block.layer}`}>
+    <fieldset disabled={!p.canEdit} className={`guided-step ${block.layer}`}>
       <div className="guided-main">
         <div className="step-heading">
           <span className="step-number">{block.time}</span>
@@ -221,30 +214,13 @@ function GuidedStep({ block, dayData, dk, p }) {
         </div>
       </div>
       <HandoffPanel record={dayData.record || {}} activeKey={block.stepKey} />
-    </section>
+    </fieldset>
   );
 }
 
-function StartDay({ cfg, dateStr, stats, onContinue }) {
-  return (
-    <section className="start-day">
-      <span className="eyebrow">{dateStr}</span>
-      <h1>Good morning, Cam.</h1>
-      <p>Here's your day. Let's go through it one stage at a time.</p>
-      <div className="start-summary">
-        <div><strong>{cfg.theme}</strong><span>{cfg.focus}</span></div>
-        <div><strong>{stats.done}/{stats.total}</strong><span>Daily record checks complete</span></div>
-      </div>
-      <button className="primary-action" type="button" onClick={onContinue}>Continue</button>
-    </section>
-  );
-}
-
-function GuidedDay({ cfg, dayDate, dayData, p }) {
+function GuidedDay({ dayDate, dayData, p, c }) {
   const [activeStep, setActiveStep] = useState('start');
   const dk = dateKey(dayDate);
-  const stats = dayStats(dayData);
-  const dateStr = dayDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   const currentIndex = FLOW_STEPS.findIndex(step => step.key === activeStep);
   const currentBlock = dayData.blocks.find(block => block.stepKey === activeStep);
 
@@ -277,9 +253,9 @@ function GuidedDay({ cfg, dayDate, dayData, p }) {
 
       <div className="guided-stage">
         {activeStep === 'start' ? (
-          <StartDay cfg={cfg} dateStr={dateStr} stats={stats} onContinue={goNext} />
+          <DailyDashboard day={dayData} dk={dk} p={p} c={c} onContinue={goNext} />
         ) : (
-          <GuidedStep block={currentBlock} dayData={dayData} dk={dk} p={p} />
+          currentBlock ? <GuidedStep block={currentBlock} dayData={dayData} dk={dk} p={p} /> : <p>This stage has no saved block.</p>
         )}
 
         <div className="step-controls">
@@ -302,7 +278,7 @@ function WeeklySection({ section, p }) {
   };
 
   return (
-    <article className={`weekly-section ${section.key}`}>
+    <fieldset disabled={!p.canEdit} className={`weekly-section ${section.key}`}>
       <div className="weekly-section-head">
         <div>
           <span className="eyebrow">{section.emoji}</span>
@@ -325,7 +301,7 @@ function WeeklySection({ section, p }) {
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} placeholder={`Add to ${section.label.toLowerCase()}...`} />
         <button type="button" onClick={submit}>Add</button>
       </div>
-    </article>
+    </fieldset>
   );
 }
 
@@ -352,7 +328,7 @@ function WeekView({ p, weekStart }) {
           <span className="eyebrow">AI context</span>
           <h3>OS Notes</h3>
         </div>
-        <textarea className="notes-ta" value={p.week.notes} onChange={e => p.setNotes(e.target.value)} placeholder="Notion links, decisions, source-of-truth notes, agent context..." />
+        <textarea className="notes-ta" disabled={!p.canEdit} value={p.week.notes} onChange={e => p.setNotes(e.target.value)} placeholder="Notion links, decisions, source-of-truth notes, agent context..." />
       </section>
     </main>
   );
@@ -365,6 +341,7 @@ const Icons = {
 
 export default function App() {
   const p = usePlanner();
+  const c = useCloudPlanner(p);
   const [theme, toggleTheme] = useTheme();
   const [viewMode, setViewMode] = useState('day');
   const [activeDayIdx, setActiveDayIdx] = useState(() => {
@@ -404,6 +381,8 @@ export default function App() {
         </div>
       </header>
 
+      <CloudPanel c={c} p={p} />
+
       <div className="day-tabs">
         {DAYS_CONFIG.map((cfg, i) => {
           const d = getDayDate(i);
@@ -424,11 +403,13 @@ export default function App() {
         })}
       </div>
 
+      <div className="planner-editor">
       {viewMode === 'day' ? (
-        <GuidedDay cfg={activeCfg} dayDate={activeDate} dayData={activeDayData} p={p} />
+        <GuidedDay key={activeKey} cfg={activeCfg} dayDate={activeDate} dayData={activeDayData} p={{ ...p, canEdit: c.ready }} c={c} />
       ) : (
-        <WeekView p={p} weekStart={p.weekStart} />
+        <WeekView p={{ ...p, canEdit: c.ready }} weekStart={p.weekStart} />
       )}
+      </div>
 
       <nav className="bottom-nav" aria-label="Mobile view">
         <div className="bottom-nav-inner">

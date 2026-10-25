@@ -1,7 +1,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --radius: 8px;
+  --radius: 16px;
   --bg: #f4f6f2;
   --surface: #ffffff;
   --surface2: #eef1ec;
@@ -706,4 +706,63 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   .week-overview {
     padding: 18px;
   }
+}
+
+/* Phase 1: retain the guided OS and give the daily overview breathing room. */
+.planner-editor { min-width: 0; }
+fieldset.guided-step, fieldset.weekly-section { min-width: 0; }
+.cloud-panel { border: 1px solid var(--line); background: var(--surface); border-radius: 16px; padding: 18px 22px; margin-bottom: 22px; }
+.cloud-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.cloud-heading p { margin-top: 6px; }
+.cloud-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.cloud-panel button, .dashboard button { padding: 11px 15px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface2); color: var(--text); }
+.signin-form { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+.signin-form label { display: grid; gap: 6px; color: var(--muted); }
+.signin-form input { padding: 11px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--bg); color: var(--text); min-width: 0; }
+.signin-form span { font-size: 12px; color: var(--muted); align-self: center; }
+.migration-choice { max-width: 850px; padding-top: 20px; }
+.migration-choice p { color: var(--muted); line-height: 1.7; margin: 12px 0; }
+.consent { display: flex; gap: 10px; align-items: start; margin: 16px 0; line-height: 1.6; }
+.consent input { margin-top: 5px; }
+.dashboard { display: grid; gap: 22px; }
+.daily-hero { padding: 40px; background: linear-gradient(125deg, var(--surface2), var(--surface)); border: 1px solid var(--line); border-radius: 22px; }
+.daily-hero h1 { font-size: clamp(32px, 4vw, 55px); line-height: 1.1; letter-spacing: -2px; font-weight: 650; margin: 16px 0; }
+.daily-hero > p { max-width: 580px; line-height: 1.7; color: var(--muted); }
+.daily-metrics { display: flex; flex-wrap: wrap; gap: 28px; margin: 25px 0; }
+.daily-metrics span { color: var(--muted); }
+.daily-metrics strong { display: block; font-size: 25px; color: var(--text); font-weight: 550; margin-bottom: 4px; }
+.dashboard-columns { display: grid; grid-template-columns: 1.1fr 1fr; gap: 22px; }
+.dashboard-card { padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; min-width: 0; }
+.dashboard-card h2 { font-size: 22px; letter-spacing: -.5px; margin: 10px 0 20px; }
+.dashboard-task { display: flex; align-items: start; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); line-height: 1.5; }
+.dashboard-task input { margin-top: 5px; width: 18px; height: 18px; accent-color: var(--green); flex-shrink: 0; }
+.dashboard-task small, .timeline small { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
+.dashboard .mini-input-row { margin-top: 20px; }
+.timeline { list-style: none; margin-top: 20px; }
+.timeline li { display: flex; gap: 18px; padding: 0 0 20px 15px; margin-left: 5px; border-left: 2px solid var(--line-strong); position: relative; }
+.timeline li::before { content: ''; width: 8px; height: 8px; background: var(--green); border-radius: 50%; position: absolute; left: -5px; top: 5px; }
+.timeline-time { color: var(--green); min-width: 32px; font-size: 12px; font-weight: 600; }
+.schedule-note { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.ai-card > p { color: var(--muted); line-height: 1.7; max-width: 740px; margin-bottom: 20px; }
+.ai-card .record-field { margin-bottom: 16px; }
+.ai-result { margin-top: 24px; line-height: 1.7; }
+.proposal { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--line); padding: 20px 0; margin-top: 16px; }
+.proposal > div { flex: 1; min-width: 200px; }
+[role="alert"] { color: var(--red); margin-top: 14px; line-height: 1.6; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.dashboard details { margin-top: 20px; line-height: 1.8; }
+@media (max-width: 760px) {
+ .app { padding: 16px 12px 100px; }
+ .daily-hero { padding: 28px 22px; }
+ .daily-hero h1 { letter-spacing: -1px; }
+ .dashboard-columns { grid-template-columns: 1fr; }
+ .dashboard-card { padding: 22px 18px; }
+ .daily-metrics { gap: 20px; }
+ .cloud-panel { padding: 16px; }
+ .signin-form { display: grid; grid-template-columns: 1fr; }
+ .signin-form input { width: 100%; }
+ .cloud-actions button { flex: 1; }
+ .flow-rail button { min-height: 44px; flex-shrink: 0; }
+ .day-tab, .icon-btn, .step-controls button { min-height: 44px; }
+ .check-item { align-items: center; }
 }
