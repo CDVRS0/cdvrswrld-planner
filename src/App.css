@@ -794,3 +794,4 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 .handoff-candidates { max-height: 24rem; overflow: auto; }
 .handoff-message { min-height: 19rem; }
 .handoff-actions, .handoff-actions span { overflow-wrap: anywhere; }
+.handoff-actions a { color: var(--blue); display: inline-block; padding-block: .5rem; text-underline-offset: .2em; }

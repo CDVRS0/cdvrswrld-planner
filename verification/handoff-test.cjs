@@ -5,7 +5,7 @@ const base = process.env.PLANNER_BASE_URL || 'http://127.0.0.1:5187/';
 const saved = page => page.locator('.cloud-panel [role=status]').filter({ hasText: /^Saved to cloud$/ }).waitFor({ timeout: 30000 });
 (async () => {
  const browser = await chromium.launch({ headless: true, executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' }); global.browser = browser;
- const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, timezoneId: 'Europe/London' }); const page = await context.newPage(); global.page = page; page.setDefaultTimeout(20000);
+ const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, timezoneId: 'Europe/London' }); const page = await context.newPage(); global.page = page; global.testPages = [page]; page.setDefaultTimeout(20000);
  const origin = new URL(base).origin;
  if (process.env.PLANNER_PREVIEW_OIDC) await page.route(origin + '/**', route => route.continue({ headers: { ...route.request().headers(), 'x-vercel-trusted-oidc-idp-token': process.env.PLANNER_PREVIEW_OIDC } }));
  await page.goto(base); await page.getByLabel('Email', { exact: true }).fill(process.env.PLANNER_TEST_EMAIL); await page.getByLabel('Password', { exact: true }).fill(process.env.PLANNER_TEST_PASSWORD);
@@ -30,11 +30,18 @@ const saved = page => page.locator('.cloud-panel [role=status]').filter({ hasTex
  assert.equal(await page.getByRole('button', { name: 'Approve & send to CDVRS AI', exact: true }).isEnabled(), false);
  if (process.env.TEST_HANDOFF_SEND === '1') {
   await page.getByRole('checkbox', { name: 'I approve sending this message to my CDVRS AI conversation.', exact: true }).check();
-  const responsePromise = page.waitForResponse(r => r.url().includes('/api/organise'));
+  const responsePromise = page.waitForResponse(r => r.url().includes('/api/organise'), { timeout: 110000 });
   await page.getByRole('button', { name: 'Approve & send to CDVRS AI', exact: true }).click(); const response = await responsePromise; const data = await response.json(); assert.equal(response.status(), 200, JSON.stringify(data));
   const link = await page.getByRole('link', { name: 'Open handoff in CDVRS AI →', exact: true }).getAttribute('href'); assert.ok(link.includes('conversation=')); console.log('HANDOFF_CONVERSATION ' + data.conversationId);
+  const ai = await context.newPage(), aiOrigin = new URL(link).origin; global.testPages.push(ai);
+  if (process.env.PLANNER_PREVIEW_OIDC) await ai.route(aiOrigin + '/**', route => route.continue({ headers: { ...route.request().headers(), 'x-vercel-trusted-oidc-idp-token': process.env.AI_PREVIEW_OIDC || process.env.PLANNER_PREVIEW_OIDC } }));
+  await ai.goto(link); await ai.getByLabel('Email', { exact: true }).fill(process.env.PLANNER_TEST_EMAIL); await ai.getByLabel('Password', { exact: true }).fill(process.env.PLANNER_TEST_PASSWORD);
+  await ai.getByRole('button', { name: 'Sign in →', exact: true }).click(); await ai.getByText('Acceptance handoff: help me continue my music work tomorrow.', { exact: true }).waitFor({ timeout: 30000 });
+  await ai.reload(); await ai.getByText('Acceptance handoff: help me continue my music work tomorrow.', { exact: true }).waitFor({ timeout: 30000 });
+  console.log('AI conversation opened after sign-in and survived reload');
+
  }
  await page.setViewportSize({ width: 390, height: 844 }); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
  await page.screenshot({ path: '/Users/grindandghost/Documents/ChatGPT/Code/cdvrs-planner-phase2-results/handoff-mobile.png', fullPage: true });
  console.log(JSON.stringify({ reviewBeforeSave: true, sundayToMonday: true, preservedSource: true, noDuplicateCarry: true, cloudReload: true, completionPersists: true, mobileNoOverflow: true, handoffSent: process.env.TEST_HANDOFF_SEND === '1' })); await browser.close();
-})().catch(async e => { console.error(e); if(global.page)console.log((await global.page.locator('body').innerText()).slice(-7000)); await global.browser?.close(); process.exitCode=1; });
+})().catch(async e => { console.error(e); for (const page of global.testPages || []) console.log('TEST PAGE', page.url(), (await page.locator('body').innerText()).slice(-2000)); await global.browser?.close(); process.exitCode=1; });
