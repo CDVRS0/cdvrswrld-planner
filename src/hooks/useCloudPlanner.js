@@ -10,7 +10,7 @@ export function useCloudPlanner(p) {
   const [tasks, setTasks] = useState([]), [projects, setProjects] = useState([]);
   const [conflicts, setConflicts] = useState([]);
   const [importReport, setImportReport] = useState('');
-  const [savedVersion, setSavedVersion] = useState('');
+  const [savedWeeks, setSavedWeeks] = useState({});
   const identity = useRef(null), engine = useRef(null), current = useRef(p.weeks), connecting = useRef(false);
   useEffect(() => { current.current = p.weeks; }, [p.weeks]);
 
@@ -56,7 +56,7 @@ export function useCloudPlanner(p) {
           setStatus(value); setConflicts([...collisions]);
           if (value === 'Saved to cloud') {
             const serialized = JSON.stringify(sync.local);
-            setSavedVersion(serialized);
+            setSavedWeeks(structuredClone(sync.local));
             localStorage.setItem('cdvrs_cloud_connection', JSON.stringify({ userId: id, weeks: serialized }));
           }
         },
@@ -102,12 +102,19 @@ export function useCloudPlanner(p) {
     if (!user || !needsChoice) return;
     let remembered;
     try { remembered = JSON.parse(localStorage.getItem('cdvrs_cloud_connection')); } catch { return; }
-    if (remembered?.userId === user.id && remembered.weeks === JSON.stringify(current.current)) void activate(false);
+    if (remembered?.userId === user.id) {
+      try {
+        if (same(JSON.parse(remembered.weeks), current.current)) {
+          const timer = setTimeout(() => { void activate(false); }, 0);
+          return () => clearTimeout(timer);
+        }
+      } catch { /* Keep the confirmation screen for an unreadable cache. */ }
+    }
     // Saved-cache reconnection is keyed to account identity, not ongoing edits.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const pending = connected && JSON.stringify(p.weeks) !== savedVersion;
+  const pending = connected && !same(p.weeks, savedWeeks);
   return { user, ready: connected && !conflicts.length, needsChoice, conflicts,
     status: pending && status === 'Saved to cloud' ? 'Saving to cloud…' : status,
     importReport, tasks, projects, activate, refresh,

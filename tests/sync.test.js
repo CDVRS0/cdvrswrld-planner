@@ -54,3 +54,6 @@ test('edits made during an in-flight save are drained after the first transactio
  for(let i=0;i<100&&statuses.at(-1)!=='Saved to cloud';i++)await new Promise(r=>setTimeout(r,2));
  assert.equal(JSON.parse(db.rows[0].notes).week.notes,'typed during save');assert.equal(db.writes.length,2);assert.equal(statuses.at(-1),'Saved to cloud');
 });
+test('database JSON key ordering does not create a dirty week or an unnecessary save',async()=>{
+ const {db,sync}=fixture();const reordered={weeklySections:[],days:copy(base.days),notes:'original'};sync.edit({[wk]:reordered});await sync.flush();assert.equal(sync.dirty(),false);assert.equal(db.writes.length,0);
+});
