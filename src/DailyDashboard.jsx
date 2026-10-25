@@ -1,3 +1,4 @@
+import HandoffActions, { IncomingHandoff } from './HandoffActions';
 import { useState } from 'react';
 import { cloud, checked } from './lib/cloud';
 import { busyIntervals, timeInZone, viewerZone, wallInstant } from './lib/calendar';
@@ -79,6 +80,7 @@ export default function DailyDashboard({ day, dk, p, c, onContinue }) {
       <div className="daily-metrics"><span><strong>{outstanding.length + due.length}</strong> outstanding</span><span><strong>{local.filter(t => t.done).length}</strong> complete</span><span><strong>{c.projects.filter(p => p.status === 'active').length}</strong> active projects</span></div>
       <button className="primary-action" onClick={onContinue}>Open daily flow →</button>
     </section>
+    <IncomingHandoff day={day} dk={dk} p={p} c={c} />
     <div className="dashboard-columns"><section className="dashboard-card"><span className="eyebrow">FOCUS FIRST</span><h2>Priorities & outstanding</h2>
       {(day.record?.plan?.objective || day.record?.work?.firstAction) && <p className="focus-intention">{day.record?.work?.firstAction || day.record?.plan?.objective}</p>}
       {priorities.map(t => <label className="dashboard-task" key={t.id}><input type="checkbox" disabled={!c.ready || busy} checked={false} onChange={async () => {
@@ -105,6 +107,7 @@ export default function DailyDashboard({ day, dk, p, c, onContinue }) {
       <details open={!commitments.length}><summary>Daily OS flow</summary><ol className="timeline">{day.blocks.map((b, bi) => <li key={`${b.stepKey}/${bi}`}><span className="timeline-time">{b.time}</span><div><strong>{b.label}</strong><small>{b.tasks.filter(t => t.done).length}/{b.tasks.length} actions complete</small></div></li>)}</ol></details>
       {due.map(t => <p key={t.id} className="schedule-note">{dk} · {t.title}</p>)}
     </section></div>
+    <HandoffActions day={day} dk={dk} p={p} c={c} />
     <section className="dashboard-card ai-card"><span className="eyebrow">CDVRS AI · YOU STAY IN CONTROL</span><h2>Make space for what matters.</h2><p>Ask for a practical plan using this day’s records, tasks and cloud projects. Suggestions stay here until you approve them.</p>
       <label className="record-field"><span>Your request</span><textarea aria-label="Your request" value={question} onChange={e => setQuestion(e.target.value)} maxLength={2000} /></label>
       <button disabled={!c.ready || busy || !question.trim()} onClick={organise}>{busy ? 'Working…' : 'Organise my day'}</button>

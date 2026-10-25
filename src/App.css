@@ -787,3 +787,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 .time-blocks { display: grid; gap: 10px; margin: 15px 0; }
 .calendar-prerequisite { padding: 16px; margin: 16px 0; border: 1px solid var(--gold); border-radius: 12px; background: var(--surface2); }
 .calendar-prerequisite strong { color: var(--gold); }
+
+.handoff-full { grid-column: 1 / -1; width: 100%; min-width: 0; }
+.handoff-buttons { display: flex; flex-wrap: wrap; gap: .75rem; margin-block: 1rem; }
+.handoff-review { border-top: 1px solid var(--border, #465044); padding-top: 1rem; margin-top: 1rem; }
+.handoff-candidates { max-height: 24rem; overflow: auto; }
+.handoff-message { min-height: 19rem; }
+.handoff-actions, .handoff-actions span { overflow-wrap: anywhere; }

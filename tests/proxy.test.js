@@ -20,3 +20,13 @@ test('proxy establishes deployment-scoped access and forwards the user bearer on
   assert.equal(calls[1].options.headers.Cookie,'_vercel_jwt=test-cookie');assert.deepEqual(res.body.actions,[]);
  } finally {globalThis.fetch=savedFetch;delete process.env.CDVRS_AI_URL;delete process.env.CDVRS_AI_PREVIEW_BYPASS;}
 });
+test('approved handoff uses the dedicated AI endpoint and returns a conversation link without the bypass',async()=>{
+ const savedFetch=globalThis.fetch;
+ process.env.CDVRS_AI_URL='https://handoff-preview.vercel.app';
+ const calls=[];globalThis.fetch=async(url,options)=>{calls.push({url:String(url),options});return {status:200,ok:true,json:async()=>({conversationId:'89eafdc7-082d-47ea-a235-d105db372128'})};};
+ try {
+  const res=response();await handler({method:'POST',headers:{authorization:'Bearer fixture'},body:{operation:'handoff',approved:true,text:'Selected context'}},res);
+  assert.equal(calls[0].url,'https://handoff-preview.vercel.app/api/planner/handoff');assert.equal(JSON.parse(calls[0].options.body).text,'Selected context');
+  assert.equal(res.body.url,'https://handoff-preview.vercel.app/?conversation=89eafdc7-082d-47ea-a235-d105db372128');assert.ok(!res.body.url.includes('_vercel_share'));
+ } finally {globalThis.fetch=savedFetch;delete process.env.CDVRS_AI_URL;}
+});

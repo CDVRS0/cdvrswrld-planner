@@ -96,3 +96,33 @@ and export. It never creates events in the user's real Google calendar.
 
 Live Google authorization must be completed by the user; API boundary tests use
 synthetic responses and are not proof of successful account consent.
+
+## Approved carry-forward and CDVRS AI handoff
+
+Start and **07 Handoff** now offer an explicit review for the following calendar
+day. Reminders are preselected; unfinished actions are opt-in. Approval adds
+selected entries to `record.handoff.incoming` on the target day, including across
+Sunday/Monday and year boundaries. The existing atomic week save persists this
+map; existing next-day records remain intact. Stable source IDs prevent repeated
+imports from duplicating entries or resetting completion. The original day and
+calendar are unchanged. Existing cloud tasks are referenced by ID, preserving
+their dates; completing a referenced task updates the original with an ownership
+and version check. Other carried actions have independent completion checkboxes.
+The daily AI request already includes this saved incoming context.
+
+**Review handoff to CDVRS AI** shows an editable exact message containing selected
+actions, energy, intention, objective, handoff notes and calendar commitments.
+A separate approval creates a saved conversation and message in the existing
+CDVRS AI tables. No model call occurs until the user continues that conversation.
+Only a conversation identifier goes in the link; no notes or auth tokens are in
+its URL. Sign in to CDVRS AI with the same account. Owner-scoped deterministic IDs
+make retries idempotent. The two additive writes are not a transaction: if a
+message write fails an empty conversation may remain, and retrying the same
+preview completes it. Changed retry text is rejected instead of overwriting.
+
+Source changes invalidate a review. Saves/merge conflicts must finish before
+preparing or approving a handoff. Account changes unmount private review state.
+`verification/handoff-test.cjs` checks approval gates, Sunday/Monday, refresh,
+completion, repeated carry-forward, mobile width and optional live handoff save
+using a disposable test account. Google Calendar authorization and daily AI
+planning were subsequently confirmed working by the user in Preview.

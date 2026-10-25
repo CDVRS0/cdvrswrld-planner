@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { appendCarry, weekKey } from '../lib/handoff';
 import { DAYS_CONFIG, WEEKLY_OS_CONFIG } from '../data/days';
 
 const STORAGE_KEY = 'cdvrs_planner_v5';
@@ -159,6 +160,11 @@ export function usePlanner() {
 
   return {
     weekStart, weekOffset, setWeekOffset, wk, week, weeks, setWeeks, legacyDateKeys,
+    carryForward: (target, entries) => setWeeks(prev => {
+      const targetWeek = weekKey(target);
+      const w = prev[targetWeek] || initWeekData(new Date(`${targetWeek}T12:00:00`));
+      return { ...prev, [targetWeek]: { ...w, days: { ...w.days, [target]: appendCarry(w.days[target], entries) } } };
+    }),
     importCalendarEvents: (events, timeZone) => updateWeek(w => {
       const days = { ...w.days };
       for (const [date, day] of Object.entries(days)) {

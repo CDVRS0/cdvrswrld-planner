@@ -1,3 +1,4 @@
+import HandoffActions, { IncomingHandoff } from './HandoffActions';
 import { useState, useEffect } from 'react';
 import { DAYS_CONFIG } from './data/days';
 import { usePlanner, dateKey } from './hooks/usePlanner';
@@ -161,7 +162,7 @@ function HandoffPanel({ record, activeKey }) {
   );
 }
 
-function GuidedStep({ block, dayData, dk, p }) {
+function GuidedStep({ block, dayData, dk, p, c }) {
   const [input, setInput] = useState('');
   const record = dayData.record?.[block.stepKey] || {};
   const fields = FIELD_GROUPS[block.stepKey] || [];
@@ -215,6 +216,7 @@ function GuidedStep({ block, dayData, dk, p }) {
         </div>
       </div>
       <HandoffPanel record={dayData.record || {}} activeKey={block.stepKey} />
+      {block.stepKey === 'handoff' && <div className="handoff-full"><IncomingHandoff day={dayData} dk={dk} p={p} c={c} /><HandoffActions day={dayData} dk={dk} p={p} c={c} /></div>}
     </fieldset>
   );
 }
@@ -256,7 +258,7 @@ function GuidedDay({ dayDate, dayData, p, c }) {
         {activeStep === 'start' ? (
           <DailyDashboard day={dayData} dk={dk} p={p} c={c} onContinue={goNext} />
         ) : (
-          currentBlock ? <GuidedStep block={currentBlock} dayData={dayData} dk={dk} p={p} /> : <p>This stage has no saved block.</p>
+          currentBlock ? <GuidedStep key={dk + activeStep} block={currentBlock} dayData={dayData} dk={dk} p={p} c={c} /> : <p>This stage has no saved block.</p>
         )}
 
         <div className="step-controls">
@@ -408,7 +410,7 @@ export default function App() {
 
       <div className="planner-editor">
       {viewMode === 'day' ? (
-        <GuidedDay key={activeKey} cfg={activeCfg} dayDate={activeDate} dayData={activeDayData} p={{ ...p, canEdit: c.ready }} c={c} />
+        <GuidedDay key={`${c.user?.id || 'signed-out'}:${activeKey}`} cfg={activeCfg} dayDate={activeDate} dayData={activeDayData} p={{ ...p, canEdit: c.ready }} c={c} />
       ) : (
         <WeekView p={{ ...p, canEdit: c.ready }} weekStart={p.weekStart} />
       )}

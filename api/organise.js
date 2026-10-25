@@ -25,10 +25,14 @@ export default async function handler(req, res) {
     const headers = { 'Content-Type': 'application/json', Authorization: authorization };
     const cookie = await previewCookie(process.env.CDVRS_AI_URL);
     if (cookie) headers.Cookie = cookie;
-    const upstream = await fetch(new URL('/api/planner/organise', process.env.CDVRS_AI_URL), {
+    const upstream = await fetch(new URL(req.body?.operation === 'handoff' ? '/api/planner/handoff' : '/api/planner/organise', process.env.CDVRS_AI_URL), {
       method: 'POST', headers, body, signal: AbortSignal.timeout(100000),
     });
     const data = await upstream.json();
+    if (req.body?.operation === 'handoff' && upstream.ok && /^[0-9a-f-]{36}$/.test(data.conversationId || '')) {
+      const url = new URL('/', process.env.CDVRS_AI_URL); url.searchParams.set('conversation', data.conversationId);
+      data.url = url.toString();
+    }
     res.setHeader('Cache-Control', 'no-store');
     return res.status(upstream.status).json(data);
   } catch {
