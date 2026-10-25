@@ -384,7 +384,7 @@ export default function App() {
       </header>
 
       <CloudPanel c={c} p={p} />
-      <CalendarPanel p={p} c={c} />
+      <CalendarPanel key={c.user?.id || 'signed-out'} p={p} c={c} />
 
       <div className="day-tabs">
         {DAYS_CONFIG.map((cfg, i) => {
