@@ -715,7 +715,7 @@ fieldset.guided-step, fieldset.weekly-section { min-width: 0; }
 .cloud-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .cloud-heading p { margin-top: 6px; }
 .cloud-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.cloud-panel button, .dashboard button { padding: 11px 15px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface2); color: var(--text); }
+.cloud-panel button, .dashboard button, .agent-chat button, .handoff-full .handoff-actions button { padding: 11px 15px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface2); color: var(--text); }
 .signin-form { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
 .signin-form label { display: grid; gap: 6px; color: var(--muted); }
 .signin-form input { padding: 11px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--bg); color: var(--text); min-width: 0; }
@@ -807,3 +807,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 .chat-context-review { margin-block: 1rem; }
 .chat-context-review textarea { min-height: 16rem; }
 .agent-chat [role="status"] { color: var(--muted); }
+
+.agent-chat button, .handoff-full .handoff-actions button { min-height: 44px; max-width: 100%; white-space: normal; }
+.agent-chat button:not(:disabled):hover, .handoff-full .handoff-actions button:not(:disabled):hover { border-color: var(--blue); }
