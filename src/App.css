@@ -785,3 +785,5 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 .calendar-events { margin: 16px 0; list-style: none; }
 .calendar-events li { padding: 10px 0; border-bottom: 1px solid var(--line); }
 .time-blocks { display: grid; gap: 10px; margin: 15px 0; }
+.calendar-prerequisite { padding: 16px; margin: 16px 0; border: 1px solid var(--gold); border-radius: 12px; background: var(--surface2); }
+.calendar-prerequisite strong { color: var(--gold); }

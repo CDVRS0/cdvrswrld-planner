@@ -26,6 +26,8 @@ export default function GoogleCalendarConnect({ p, c, zone, onPreview }) {
   return <section className="google-connect"><h3>Use the Google calendar you see in Apple Calendar</h3>
     {!clientId ? <p>Live Google authorization needs a one-time Google OAuth client ID configuration. Calendar-file import/export is available below.</p> : <>
       <p>Connect with read-only access. Your Google token stays in memory for this browser session. Approve importing the returned events before they are saved to your Planner.</p>
+      {c.ready && !oauth && !error && <p role="status">Preparing Google authorization…</p>}
+      {c.ready && !oauth && error && <button onClick={() => { setError(''); loadGoogleIdentity().then(value => { if (mounted.current) setOauth(value); }).catch(e => { if (mounted.current) setError(e.message); }); }}>Retry loading Google authorization</button>}
       <button disabled={!c.ready || !oauth || busy} onClick={() => {
         setError('');
         const client = oauth.initTokenClient({ client_id: clientId, scope: 'https://www.googleapis.com/auth/calendar.readonly',

@@ -11,6 +11,14 @@ export default function CalendarPanel({ p, c }) {
   const signature = JSON.stringify(p.week);
   return <details className="calendar-panel"><summary>Google & Apple Calendar</summary>
     <p>Read your Google calendar or import a calendar .ics file for {p.wk}–{addDays(p.wk, 6)}. Events are reviewed before you approve saving to the Planner. Your Google calendar will continue to appear in Apple Calendar as usual.</p>
+    {!c.ready && <div className="calendar-prerequisite" role="note">
+      <strong>{!c.user ? 'Sign in to your Planner first' : c.conflicts?.length ? 'Resolve the cloud changes first' : 'Finish connecting your Planner cloud first'}</strong>
+      <p>{!c.user ? 'Use the Planner email and password at the top of the page. Calendar controls unlock after your cloud connection is ready.' : c.conflicts?.length ? 'Choose which values to keep in the cloud review panel above. Your calendar controls will unlock after saving those choices.' : 'In the cloud panel above, confirm the connection and choose Load cloud Planner, or back up and approve importing existing records.'}</p>
+      <button onClick={() => {
+        const panel = document.querySelector('.cloud-panel'); panel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        panel?.querySelector('input[type=email], input[type=checkbox], input[type=radio]')?.focus({ preventScroll: true });
+      }}>Open cloud setup</button>
+    </div>}
     <GoogleCalendarConnect key={c.user?.id || 'signed-out'} p={p} c={c} zone={zone} onPreview={value => { setPreview(value); setApproved(false); setError(''); }} />
     <div className="calendar-controls"><label>Calendar source<select value={provider} onChange={e => { setProvider(e.target.value); setPreview(null); }}><option value="google">Google Calendar</option><option value="apple">Apple Calendar</option></select></label>
       <label>Display time zone<input value={zone} onChange={e => { setZone(e.target.value); setPreview(null); }} /></label>
