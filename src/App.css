@@ -766,3 +766,22 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
  .day-tab, .icon-btn, .step-controls button { min-height: 44px; }
  .check-item { align-items: center; }
 }
+
+.conflict-review { margin-top: 20px; line-height: 1.6; }
+.conflict-review > fieldset { margin: 16px 0; border: 1px solid var(--line); padding: 16px; border-radius: 12px; min-width: 0; }
+.conflict-review legend { color: var(--green); font-size: 12px; overflow-wrap: anywhere; }
+.conflict-review label { display: block; margin: 10px 0; }
+.conflict-review input { margin-right: 8px; }
+.conflict-review pre { padding: 12px; background: var(--bg); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 180px; overflow: auto; }
+.calendar-panel { padding: 18px 22px; margin-bottom: 22px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; line-height: 1.7; }
+.calendar-panel summary { cursor: pointer; font-weight: 650; }
+.calendar-panel p { color: var(--muted); margin: 12px 0; }
+.calendar-controls { display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0; }
+.calendar-controls label { display: grid; gap: 6px; max-width: 100%; }
+.calendar-panel input, .calendar-panel select { min-width: 0; max-width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text); }
+.calendar-panel input[type=checkbox] { margin-top: 8px; }
+.calendar-panel button { padding: 11px 15px; margin: 8px 10px 0 0; background: var(--surface2); border: 1px solid var(--line-strong); border-radius: 10px; color: var(--text); }
+.calendar-preview ul { padding-left: 22px; margin-top: 10px; max-height: 240px; overflow-y: auto; }
+.calendar-events { margin: 16px 0; list-style: none; }
+.calendar-events li { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.time-blocks { display: grid; gap: 10px; margin: 15px 0; }

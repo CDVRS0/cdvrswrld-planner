@@ -1,6 +1,26 @@
 import { useState } from 'react';
 import { cloud, downloadBackup } from './lib/cloud';
 
+function ConflictReview({ c, backedUp }) {
+  const [choices, setChoices] = useState({});
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const fields = c.conflicts.flatMap(conflict => conflict.fields.map(field => ({ ...field, wk: conflict.wk,
+    id: `${conflict.wk}:${JSON.stringify(field.path)}` })));
+  const show = value => value === undefined ? '(removed)' : typeof value === 'string' ? value || '(empty)' : JSON.stringify(value);
+  return <section className="conflict-review" aria-label="Resolve cloud changes"><h3>Both devices changed the same fields</h3>
+    <p>Changes to different fields have been combined. Choose the values to keep below, and download a browser backup before saving.</p>
+    {fields.map(field => <fieldset key={field.id}><legend>{field.wk} · {field.path.join(' / ') || 'Whole week'}</legend>
+      {['local', 'remote'].map(choice => <label key={choice}><input type="radio" name={field.id} checked={choices[field.id] === choice}
+        onChange={() => setChoices(v => ({ ...v, [field.id]: choice }))} />{choice === 'local' ? 'This device' : 'Cloud'}<pre>{show(field[choice])}</pre></label>)}
+    </fieldset>)}
+    <button disabled={!backedUp || busy || !fields.every(f => choices[f.id])} onClick={async () => {
+      setBusy(true); setError(''); try { await c.resolve(choices); } catch (e) { setError(e.message); } finally { setBusy(false); }
+    }}>{busy ? 'Saving choices…' : 'Save chosen values'}</button>
+    {error && <p role="alert">{error}</p>}
+  </section>;
+}
+
 export default function CloudPanel({ c, p }) {
   const [error, setError] = useState('');
   const [backup, setBackup] = useState(null);
@@ -54,6 +74,7 @@ export default function CloudPanel({ c, p }) {
       <div className="cloud-actions">{hasLocal && <button disabled={!confirmed || !backedUp} onClick={() => c.activate(true, upload)}>Import missing browser records & connect</button>}
         <button disabled={!confirmed || !backedUp} onClick={() => c.activate(false)}>Load cloud Planner</button></div>
     </div>}
+    {c.conflicts?.length > 0 && <ConflictReview key={c.conflicts.map(v => `${v.wk}:${v.version}`).join('|')} c={c} backedUp={backedUp} />}
     {error && <p role="alert">{error}</p>}
     {c.importReport && <p>{c.importReport}</p>}
   </section>;

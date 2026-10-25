@@ -6,7 +6,7 @@ export const cloud = import.meta.env?.VITE_SUPABASE_URL && import.meta.env?.VITE
 
 export async function checked(query) {
   const { data, error } = await query;
-  if (error) throw new Error(error.message);
+  if (error) throw Object.assign(new Error(error.message), { code: error.code });
   return data;
 }
 

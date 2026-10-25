@@ -5,6 +5,7 @@ import './App.css';
 import { useCloudPlanner } from './hooks/useCloudPlanner';
 import CloudPanel from './CloudPanel';
 import DailyDashboard from './DailyDashboard';
+import CalendarPanel from './CalendarPanel';
 
 const FLOW_STEPS = [
   { key: 'nature', label: 'Nature', number: '01' },
@@ -383,6 +384,7 @@ export default function App() {
       </header>
 
       <CloudPanel c={c} p={p} />
+      <CalendarPanel p={p} c={c} />
 
       <div className="day-tabs">
         {DAYS_CONFIG.map((cfg, i) => {

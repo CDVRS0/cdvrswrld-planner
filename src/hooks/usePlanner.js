@@ -159,6 +159,18 @@ export function usePlanner() {
 
   return {
     weekStart, weekOffset, setWeekOffset, wk, week, weeks, setWeeks, legacyDateKeys,
+    importCalendarEvents: (events, timeZone) => updateWeek(w => {
+      const days = { ...w.days };
+      for (const [date, day] of Object.entries(days)) {
+        const updated = new Map((day.calendarEvents || []).map(event => [event.id, event]));
+        for (const event of events.filter(item => item.date === date)) {
+          if (event.cancelled) updated.delete(event.id);
+          else updated.set(event.id, event);
+        }
+        days[date] = { ...day, calendarEvents: [...updated.values()] };
+      }
+      return { ...w, days, timeZone };
+    }),
     addWeeklyItem: (sectionKey, text) => updateWeeklySection(sectionKey, section => ({
       ...section,
       items: [...section.items, { text, done: false }],
