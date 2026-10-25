@@ -75,14 +75,17 @@ Pending proposals are intentionally not persisted across reloads in Phase 1.
 
 Use `.env.example`; never commit `.env.local`. Required client settings:
 `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. The server-only
-`CDVRS_AI_URL` points to the exact tested AI Preview. The proxy forwards a
-short-lived Vercel OIDC token through the standard Trusted Sources header;
-provider keys and platform identity never reach the browser. The target AI
-project must approve this one access rule: Planner project `preview` to AI
-project `preview`. Production access is excluded. See `PREVIEW-ACCESS.json`
-for the prepared rule. The access-control change is pending explicit approval.
-Share links are used only for opening the Planner review page, not as service
-credentials. Supabase ownership checks still protect all user data.
+`CDVRS_AI_URL` points to the exact tested AI Preview. The server-only
+`CDVRS_AI_PREVIEW_BYPASS` holds its private, deployment-scoped share credential.
+The server establishes the Preview access cookie without exposing it to the
+browser. This 30-day access must be renewed if the Preview is kept longer.
+The Planner review URL requires normal Vercel sign-in. Do not generate a second
+review share link: this account's share-link behavior invalidated the AI service
+credential when a Planner review share was created. The user approved a narrow
+Preview-to-Preview Trusted Sources rule, but Vercel rejected that setting as
+unavailable; `PREVIEW-ACCESS.json` records the exact attempted scope. No
+Production access or existing protection rules were changed. Supabase ownership
+checks still protect all user data.
 
 ## Validation
 
