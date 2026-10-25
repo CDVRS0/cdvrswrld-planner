@@ -159,3 +159,29 @@ additional embedding, memory-extraction or agent orchestration calls.
 `verification/section-chat-test.cjs` uses a disposable account and two live model
 calls to check real section grounding, cloud draft/reply persistence, history
 isolation, Handoff approval, reviewed context and mobile width.
+
+## Final acceptance fixes
+
+The UI shares the GYM/CDVRS AI charcoal-and-blue visual language, compact brand
+header, clearer metric cards and mobile touch targets while retaining both themes
+and every existing OS workflow. Nature chat now offers **Generate AI reflection**;
+a reply can be edited and reviewed before separate approval saves it to Nature's
+reflection notes. Existing reflection notes remain unchanged until approval, and
+a changed destination field stops a stale replacement.
+
+Weekly **OS Notes** now go to owner-scoped section context and daily planning.
+Handoff packets include OS Notes in the exact text reviewed before sending.
+AI context is bounded to the first 4,000 note characters; all notes remain saved,
+and the UI warns when notes exceed that context bound. Links are not fetched.
+
+The carried-forward box now renders approved incoming items with source dates.
+Previous-day summaries are offered as carry-forward notes. A current-day review
+can bring missing previous-day items into today without navigating back, including
+across week boundaries. Previous context is visible for review, but becomes part
+of today's AI context only after approval. Existing destination notes are retained.
+
+Production remains separate from Preview: configure Planner's Production
+Supabase/public Google settings and an authenticated Production AI connection,
+register its final origin with Google, merge only after owner sign-off and test
+the deployed Production flow. The Preview service-access token is deployment
+scoped and temporary; it is not a Production credential.

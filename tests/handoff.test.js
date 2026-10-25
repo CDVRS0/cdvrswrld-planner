@@ -28,3 +28,15 @@ test('AI preview contains selected actions, personal context and commitments wit
   const text = handoffText(day, '2026-10-25', []);
   assert.match(text, /steady/); assert.match(text, /Release the track/); assert.match(text, /Studio/); assert.match(text, /11:00–12:00/); assert.doesNotMatch(text, /Finish mix|Sent invoice/);
 });
+test('previous-day summary is offered as an approved carry item and OS Notes appear in the exact handoff preview', () => {
+  const source = structuredClone(day); source.record.handoff.summary = 'Client mix needs a final listen';
+  const entries = carryCandidates(source, '2026-10-25'); assert.equal(entries[0].label, 'Previous day handoff');
+  const target = appendCarry({ record: {}, blocks: [] }, [entries[0]]);
+  assert.equal(Object.values(target.record.handoff.incoming)[0].text, 'Client mix needs a final listen');
+  assert.match(handoffText(source, '2026-10-25', entries, 'Prioritise the album release'), /Weekly OS Notes: Prioritise the album release/);
+});
+test('previous-day handoff lookup crosses Sunday to Monday without changing records', async () => {
+  const { previousHandoff } = await import('../src/lib/handoff.js'); const weeks = { '2026-10-19': { days: { '2026-10-25': day } } };
+  assert.equal(previousHandoff(weeks, '2026-10-26').sourceDate, '2026-10-25'); assert.equal(previousHandoff(weeks, '2026-10-26').day, day);
+  assert.equal(previousHandoff({}, '2026-10-26').day, null);
+});

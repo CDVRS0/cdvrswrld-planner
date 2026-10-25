@@ -1,5 +1,6 @@
+import { previousHandoff } from './lib/handoff';
 import AgentChat from './AgentChat';
-import HandoffActions, { IncomingHandoff } from './HandoffActions';
+import HandoffActions, { IncomingHandoff, PreviousDayHandoff } from './HandoffActions';
 import { useState, useEffect } from 'react';
 import { DAYS_CONFIG } from './data/days';
 import { usePlanner, dateKey } from './hooks/usePlanner';
@@ -135,7 +136,7 @@ function RecordField({ label, value, onChange, singleLine }) {
   );
 }
 
-function HandoffPanel({ record, activeKey }) {
+function HandoffPanel({ record, activeKey, previous }) {
   const nature = record.nature || {};
   const plan = record.plan || {};
   const handoff = record.handoff || {};
@@ -154,7 +155,10 @@ function HandoffPanel({ record, activeKey }) {
         <div><strong>Energy</strong><span>{nature.energy || 'Not recorded yet'}</span></div>
         <div><strong>Intention</strong><span>{nature.intention || 'Not recorded yet'}</span></div>
         <div><strong>Main objective</strong><span>{plan.objective || 'Not planned yet'}</span></div>
-        <div><strong>Carry forward</strong><span>{handoff.carryForward || 'Nothing captured yet'}</span></div>
+        <div><strong>Carry forward</strong><span>{handoff.carryForward || (Object.keys(handoff.incoming || {}).length ? 'Approved from earlier days' : 'Nothing approved yet')}</span>
+          {Object.values(handoff.incoming || {}).sort((a, b) => a.sourceDate.localeCompare(b.sourceDate) || a.text.localeCompare(b.text)).map(item => <p className="carried-context" key={item.id}><span>{item.text}</span><small>From {item.sourceDate}{item.done ? ' · complete' : ''}</small></p>)}
+        </div>
+        {previous?.day?.record?.handoff?.summary && <div><strong>Previous day · {previous.sourceDate}</strong><span>{previous.day.record.handoff.summary}</span><small>Review carry-forward to add this to today’s AI context.</small></div>}
       </div>
       {lowEnergy && (
         <p className="agent-note">Energy looks low, so the plan should bias toward high-value first actions and fewer open loops.</p>
@@ -216,9 +220,9 @@ function GuidedStep({ block, dayData, dk, p, c }) {
           </div>
         </div>
       </div>
-      <HandoffPanel record={dayData.record || {}} activeKey={block.stepKey} />
+      <HandoffPanel record={dayData.record || {}} activeKey={block.stepKey} previous={previousHandoff(p.weeks, dk)} />
       <div className="handoff-full"><AgentChat key={`${c.user?.id}:${dk}:${block.stepKey}`} day={dayData} dk={dk} section={block.stepKey} p={p} c={c} /></div>
-      {block.stepKey === 'handoff' && <div className="handoff-full"><IncomingHandoff day={dayData} dk={dk} p={p} c={c} /><HandoffActions day={dayData} dk={dk} p={p} c={c} /></div>}
+      {block.stepKey === 'handoff' && <div className="handoff-full"><PreviousDayHandoff day={dayData} dk={dk} p={p} c={c} /><IncomingHandoff day={dayData} dk={dk} p={p} c={c} /><HandoffActions day={dayData} dk={dk} p={p} c={c} /></div>}
     </fieldset>
   );
 }
@@ -247,7 +251,7 @@ function GuidedDay({ dayDate, dayData, p, c }) {
 
   return (
     <main className="guided-day-layout">
-      <nav className="flow-rail" aria-label="Daily OS flow">
+      <nav className="flow-rail" aria-label="Daily OS flow"><p className="rail-title">DAILY WORKSPACE</p>
         <button type="button" className={activeStep === 'start' ? 'active' : ''} onClick={() => setActiveStep('start')}>Start</button>
         {FLOW_STEPS.map(step => (
           <button key={step.key} type="button" className={activeStep === step.key ? 'active' : ''} onClick={() => setActiveStep(step.key)}>
@@ -333,7 +337,9 @@ function WeekView({ p, weekStart }) {
           <span className="eyebrow">AI context</span>
           <h3>OS Notes</h3>
         </div>
-        <textarea className="notes-ta" disabled={!p.canEdit} value={p.week.notes} onChange={e => p.setNotes(e.target.value)} placeholder="Notion links, decisions, source-of-truth notes, agent context..." />
+        <p className="schedule-note">Shared with section chats and daily planning. Handoff chat includes these notes in your context review. Linked pages are not opened automatically.</p>
+        {p.week.notes.length > 4000 && <p role="status">AI reads the first 4,000 characters; the full notes remain saved.</p>}
+        <textarea aria-label="OS Notes" className="notes-ta" disabled={!p.canEdit} value={p.week.notes} onChange={e => p.setNotes(e.target.value)} placeholder="Notion links, decisions, source-of-truth notes, agent context..." />
       </section>
     </main>
   );
@@ -370,8 +376,7 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <div>
-          <div className="logo">CDVRSWRLD OS</div>
-          <div className="tagline">Start Day {'>'} Nature {'>'} Plan {'>'} Work {'>'} Social {'>'} Review</div>
+          <div className="planner-brand"><span className="planner-brand-mark" aria-hidden="true">C<span>↗</span></span><div><div className="logo">CDVRSWRLD <span>PLANNER</span></div><div className="tagline">YOUR PERSONAL OPERATING SYSTEM</div></div></div>
         </div>
         <div className="header-right">
           <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label="Toggle theme">{theme === 'dark' ? 'Light' : 'Dark'}</button>

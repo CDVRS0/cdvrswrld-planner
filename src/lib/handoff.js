@@ -9,7 +9,7 @@ export function weekKey(date) {
 }
 export function carryCandidates(day, date, tasks = []) {
   const entries = [];
-  for (const [field, label] of [['carryForward', 'Carry forward'], ['remember', 'Remember tomorrow']]) {
+  for (const [field, label] of [['summary', 'Previous day handoff'], ['carryForward', 'Carry forward'], ['remember', 'Remember tomorrow']]) {
     const text = day.record?.handoff?.[field]?.trim();
     if (text) entries.push({ id: JSON.stringify([date, field, text]), text, label, sourceDate: date, kind: 'note' });
   }
@@ -31,12 +31,19 @@ export function appendCarry(day, entries) {
   for (const entry of entries) if (!Object.hasOwn(incoming, entry.id)) incoming[entry.id] = { ...entry, done: false };
   return { ...day, record: { ...day.record, handoff: { ...day.record?.handoff, incoming } } };
 }
-export function handoffText(day, date, entries) {
+export function handoffText(day, date, entries, osNotes = '') {
   const r = day.record || {};
   return [`Planner handoff · ${date}`, 'Use this approved context to help me continue. Suggest changes for my approval; do not claim to have saved or rescheduled anything.',
     ...[['Energy', r.nature?.energy], ['Intention', r.nature?.intention], ['Main objective', r.plan?.objective], ['Next action', r.work?.firstAction], ['Context for the next agent', r.handoff?.summary], ['Carry forward', r.handoff?.carryForward], ['Remember tomorrow', r.handoff?.remember], ['Review / next priority', r.review?.tomorrow]].filter(([, value]) => value?.trim()).map(([label, value]) => `${label}: ${value}`),
+    osNotes.trim() ? `Weekly OS Notes: ${osNotes.slice(0, 4000)}` : '',
     'Selected unfinished actions and notes:', ...entries.map(e => `- ${e.text} (${e.label}; from ${e.sourceDate})`),
     'Calendar commitments:', ...(day.calendarEvents || []).map(e => `- ${e.title}: ${e.start}–${e.end}`),
     r.plan?.commitments || '', ...((r.plan?.timeBlocks || []).map(b => `- ${b.start_time}–${b.end_time} ${b.title}`)),
   ].filter(Boolean).join('\n\n');
+}
+
+export function previousHandoff(weeks, date) {
+  const d = new Date(`${date}T12:00:00Z`); d.setUTCDate(d.getUTCDate() - 1);
+  const sourceDate = d.toISOString().slice(0, 10);
+  return { sourceDate, day: weeks[weekKey(sourceDate)]?.days?.[sourceDate] || null };
 }

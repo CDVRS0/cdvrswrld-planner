@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { cloud, checked } from './lib/cloud';
-import { carryCandidates, handoffText, nextDay, weekKey } from './lib/handoff';
+import { carryCandidates, handoffText, nextDay, weekKey, previousHandoff } from './lib/handoff';
 import { same } from './lib/sync';
 
 export function IncomingHandoff({ day, dk, p, c }) {
@@ -38,13 +38,13 @@ export default function HandoffActions({ day, dk, p, c }) {
     const items = candidates.filter(item => mode === 'ai' || !Object.hasOwn(incoming, item.id));
     const chosen = items.filter(item => item.kind === 'note').map(item => item.id);
     setSelected(chosen);
-    setReview({ mode, items, source: structuredClone(day), requestId: crypto.randomUUID() });
-    setText(handoffText(day, dk, items.filter(item => chosen.includes(item.id))));
+    setReview({ mode, items, source: structuredClone(day), sourceNotes: p.week.notes || '', requestId: crypto.randomUUID() });
+    setText(handoffText(day, dk, items.filter(item => chosen.includes(item.id)), p.week.notes || ''));
   }
   async function save() {
     setError('');
     if (!approved || locked) return;
-    if (!same(day, review.source)) { setError('This day changed since your preview. Close it and review again.'); return; }
+    if (!same(day, review.source) || (p.week.notes || '') !== review.sourceNotes) { setError('This day changed since your preview. Close it and review again.'); return; }
     const fresh = carryCandidates(day, dk, c.tasks);
     const entries = review.items.filter(item => selected.includes(item.id));
     if (entries.some(item => !fresh.some(value => same(value, item)))) { setError('An unfinished item changed. Close this preview and review again.'); return; }
@@ -70,7 +70,7 @@ export default function HandoffActions({ day, dk, p, c }) {
       <p>{review.mode === 'carry' ? 'Only selected items are added to the next day’s handoff checklist. Existing notes are preserved; task dates and calendar events are unchanged.' : 'Selected items and the day context below will be saved as a message in a new CDVRS AI conversation. No AI response or Planner change runs automatically.'}</p>
       <div className="handoff-candidates">{review.items.map(item => <label className="dashboard-task" key={item.id}><input type="checkbox" checked={selected.includes(item.id)} disabled={busy} onChange={e => {
         const next = e.target.checked ? [...selected, item.id] : selected.filter(id => id !== item.id); setSelected(next); setApproved(false);
-        setText(handoffText(review.source, dk, review.items.filter(value => next.includes(value.id))));
+        setText(handoffText(review.source, dk, review.items.filter(value => next.includes(value.id)), p.week.notes || ''));
       }} /><span>{item.text}<small>{item.label} · {item.sourceDate}</small></span></label>)}</div>
       {!review.items.length && <p>No new unfinished items or reminders to carry forward.</p>}
       {review.mode === 'ai' && <label className="record-field"><span>Exact handoff message (editable)</span><textarea aria-label="Exact handoff message" className="handoff-message" maxLength={20000} disabled={busy} value={text} onChange={e => { setText(e.target.value); setApproved(false); }} /></label>}
@@ -79,5 +79,27 @@ export default function HandoffActions({ day, dk, p, c }) {
       <div className="handoff-buttons"><button disabled={locked || !approved || (review.mode === 'carry' ? !selected.length : !text.trim()) || text.length > 20000} onClick={save}>{busy ? 'Saving handoff…' : review.mode === 'carry' ? 'Approve & save to tomorrow' : 'Approve & send to CDVRS AI'}</button><button disabled={busy} onClick={() => { setReview(null); setError(''); }}>Close preview</button></div>
     </div>}
     {notice && <p role="status">{notice}</p>}{link && <a href={link} target="_blank" rel="noopener noreferrer">Open handoff in CDVRS AI →</a>}{error && <p role="alert">{error}</p>}
+  </section>;
+}
+
+export function PreviousDayHandoff({ day, dk, p, c }) {
+  const { sourceDate, day: source } = previousHandoff(p.weeks, dk);
+  const [review, setReview] = useState(null), [selected, setSelected] = useState([]), [approved, setApproved] = useState(false), [notice, setNotice] = useState('');
+  const existing = day.record?.handoff?.incoming || {};
+  const items = source ? carryCandidates(source, sourceDate, c.tasks).filter(item => !Object.hasOwn(existing, item.id)) : [];
+  const notes = source?.record?.handoff || {};
+  if (!source || !items.length) return null;
+  const locked = !c.ready || c.status !== 'Saved to cloud';
+  return <section className="dashboard-card previous-handoff"><span className="eyebrow">FROM {sourceDate}</span><h2>Previous day’s handoff</h2>
+    {[notes.summary, notes.carryForward, notes.remember].filter(Boolean).map((text, i) => <p key={i} className="context-copy">{text}</p>)}
+    <p>Review what belongs in this day. Items are added to the carried-forward box and AI context only after your approval.</p>
+    <button disabled={locked} onClick={() => { setReview({ source: structuredClone(source), items }); setSelected(items.filter(item => item.kind === 'note').map(item => item.id)); setApproved(false); setNotice(''); }}>Review previous day’s handoff</button>
+    {review && <div className="handoff-review"><h3>Carry selected items into {dk}</h3><div className="handoff-candidates">{review.items.map(item => <label className="dashboard-task" key={item.id}><input type="checkbox" checked={selected.includes(item.id)} onChange={e => { setSelected(ids => e.target.checked ? [...ids, item.id] : ids.filter(id => id !== item.id)); setApproved(false); }} /><span>{item.text}<small>{item.label}</small></span></label>)}</div>
+      <label className="dashboard-task"><input type="checkbox" checked={approved} onChange={e => setApproved(e.target.checked)} /><span>I approve adding these previous-day items to {dk}.</span></label>
+      <div className="handoff-buttons"><button disabled={locked || !approved || !selected.length} onClick={() => {
+        if (!same(source, review.source) || review.items.filter(item => selected.includes(item.id)).some(item => !items.some(fresh => same(item, fresh)))) { setNotice('The previous day changed. Review it again before saving.'); return; }
+        p.carryForward(dk, review.items.filter(item => selected.includes(item.id))); setReview(null); setNotice('Approved items added. Check the cloud save status before leaving.');
+      }}>Approve & carry into this day</button><button onClick={() => setReview(null)}>Close previous-day review</button></div></div>}
+    {notice && <p role="status">{notice}</p>}
   </section>;
 }

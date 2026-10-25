@@ -2,16 +2,16 @@
 
 :root {
   --radius: 16px;
-  --bg: #f4f6f2;
+  --bg: #f4f6fb;
   --surface: #ffffff;
-  --surface2: #eef1ec;
+  --surface2: #eef2f8;
   --line: rgba(20, 28, 24, 0.11);
   --line-strong: rgba(20, 28, 24, 0.2);
-  --text: #141916;
+  --text: #172033;
   --muted: rgba(20, 25, 22, 0.62);
   --muted2: rgba(20, 25, 22, 0.38);
   --green: #2e7759;
-  --blue: #1e669d;
+  --blue: #236ed6;
   --gold: #9b6a18;
   --red: #b14a42;
   --ink: #111513;
@@ -19,16 +19,16 @@
 }
 
 [data-theme="dark"] {
-  --bg: #101411;
-  --surface: #181e1a;
-  --surface2: #202822;
+  --bg: #080a0e;
+  --surface: #101319;
+  --surface2: #171c25;
   --line: rgba(236, 241, 233, 0.1);
   --line-strong: rgba(236, 241, 233, 0.18);
-  --text: #f2f5ef;
+  --text: #f4f5f8;
   --muted: rgba(242, 245, 239, 0.64);
   --muted2: rgba(242, 245, 239, 0.36);
-  --green: #7ec19d;
-  --blue: #78aee0;
+  --green: #7eb6f4;
+  --blue: #438dff;
   --gold: #d2a456;
   --red: #dd746d;
   --ink: #f2f5ef;
@@ -810,3 +810,51 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
 .agent-chat button, .handoff-full .handoff-actions button { min-height: 44px; max-width: 100%; white-space: normal; }
 .agent-chat button:not(:disabled):hover, .handoff-full .handoff-actions button:not(:disabled):hover { border-color: var(--blue); }
+
+/* Shared CDVRS app language: charcoal surfaces, blue emphasis and compact chrome. */
+.app { max-width: 1360px; padding-top: 0; }
+.app-header { min-height: 88px; padding-block: 18px; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+.planner-brand { display: flex; align-items: center; gap: 12px; }
+.planner-brand-mark { display: grid; place-items: center; position: relative; width: 40px; height: 40px; border: 1px solid var(--line-strong); border-radius: 12px; font-size: 27px; font-weight: 650; }
+.planner-brand-mark > span { position: absolute; right: -5px; top: -10px; color: var(--blue); font-size: 22px; }
+.logo { font-size: 17px; font-weight: 650; letter-spacing: .055em; }
+.logo > span { color: var(--blue); font-weight: 450; }
+.tagline { font-size: 9px; letter-spacing: .14em; margin-top: 5px; }
+.eyebrow { color: var(--blue); letter-spacing: .14em; }
+.cloud-panel, .calendar-panel, .dashboard-card, .guided-step, .weekly-section, .agent-panel { border-radius: 18px; box-shadow: none; }
+.daily-hero { background: linear-gradient(120deg, color-mix(in srgb, var(--blue) 8%, var(--surface)), var(--surface)); border-radius: 24px; padding: clamp(24px, 4vw, 42px); }
+.daily-hero h1 { font-size: clamp(34px, 4.3vw, 54px); letter-spacing: -.045em; font-weight: 650; }
+.daily-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.daily-metrics > span { padding: 17px; border: 1px solid var(--line-strong); border-radius: 14px; background: var(--surface); font-size: 12px; }
+.daily-metrics strong { font-size: 27px; font-weight: 600; }
+.dashboard .primary-action, .agent-chat button[type=submit]:not(:disabled) { background: var(--blue); color: #07101f; border-color: var(--blue); font-weight: 650; }
+.flow-rail { padding: 16px 10px; gap: 5px; border-radius: 18px; background: var(--surface); }
+.rail-title { color: var(--muted); font-size: 9px; letter-spacing: .14em; padding: 0 10px 14px; }
+.flow-rail button { border-color: transparent; border-radius: 10px; background: transparent; min-height: 44px; color: var(--muted); }
+.flow-rail button.active, .day-tab.active { color: var(--blue); background: color-mix(in srgb, var(--blue) 12%, var(--surface)); border-color: color-mix(in srgb, var(--blue) 35%, var(--line)); }
+.day-tab { border-radius: 13px; padding: 12px; }
+.guided-step { padding: clamp(18px, 2vw, 28px); gap: 24px; }
+.guided-step.nature, .guided-step.work, .guided-step.social, .guided-step.review { border-top-color: var(--blue); }
+.step-heading h2 { font-size: clamp(27px, 3vw, 38px); letter-spacing: -.035em; font-weight: 600; }
+.agent-chat { background: var(--surface); border-radius: 18px; }
+.agent-message { background: var(--surface2); }
+.context-copy, .carried-context { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+.carried-context { padding-top: 12px; border-top: 1px solid var(--line); margin-top: 12px; }
+.carried-context small, .handoff-list small { display: block; color: var(--muted); font-size: 11px; margin-top: 5px; }
+.previous-handoff, .reflection-review { margin-block: 18px; padding: 20px; border: 1px solid var(--line-strong); border-radius: 16px; background: var(--surface2); }
+.reflection-review h4 { font-size: 18px; margin-bottom: 12px; }
+.reflection-review textarea { min-height: 160px; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+@media (max-width: 1180px) { .rail-title { display: none; } .flow-rail { padding: 8px; } }
+@media (max-width: 640px) {
+  .app-header { padding-block: 18px; gap: 20px; }
+  .header-right { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; }
+  .theme-toggle { width: auto; min-height: 44px; }
+  .week-nav { grid-column: 1 / -1; }
+  .daily-metrics { gap: 7px; }
+  .daily-metrics > span { padding: 12px 9px; font-size: 10px; }
+  .daily-metrics strong { font-size: 24px; }
+  .logo { font-size: 15px; }
+  .guided-step { padding: 16px; }
+  .previous-handoff, .reflection-review { padding: 15px; }
+}

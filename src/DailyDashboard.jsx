@@ -1,4 +1,4 @@
-import HandoffActions, { IncomingHandoff } from './HandoffActions';
+import HandoffActions, { IncomingHandoff, PreviousDayHandoff } from './HandoffActions';
 import { useState } from 'react';
 import { cloud, checked } from './lib/cloud';
 import { busyIntervals, timeInZone, viewerZone, wallInstant } from './lib/calendar';
@@ -30,7 +30,7 @@ export default function DailyDashboard({ day, dk, p, c, onContinue }) {
       const { data: { session } } = await cloud.auth.getSession();
       if (!session) throw new Error('Sign in to use CDVRS AI.');
       const response = await fetch('/api/organise', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ message: question, date: dk, day, busy: busyIntervals(day, dk, zone), timeZone: zone }) });
+        body: JSON.stringify({ message: question, date: dk, expectedVersion: c.version, day, busy: busyIntervals(day, dk, zone), timeZone: zone }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'CDVRS AI could not respond.');
       setResult(data);
@@ -80,6 +80,7 @@ export default function DailyDashboard({ day, dk, p, c, onContinue }) {
       <div className="daily-metrics"><span><strong>{outstanding.length + due.length}</strong> outstanding</span><span><strong>{local.filter(t => t.done).length}</strong> complete</span><span><strong>{c.projects.filter(p => p.status === 'active').length}</strong> active projects</span></div>
       <button className="primary-action" onClick={onContinue}>Open daily flow →</button>
     </section>
+    <PreviousDayHandoff day={day} dk={dk} p={p} c={c} />
     <IncomingHandoff day={day} dk={dk} p={p} c={c} />
     <div className="dashboard-columns"><section className="dashboard-card"><span className="eyebrow">FOCUS FIRST</span><h2>Priorities & outstanding</h2>
       {(day.record?.plan?.objective || day.record?.work?.firstAction) && <p className="focus-intention">{day.record?.work?.firstAction || day.record?.plan?.objective}</p>}
@@ -110,7 +111,7 @@ export default function DailyDashboard({ day, dk, p, c, onContinue }) {
     <HandoffActions day={day} dk={dk} p={p} c={c} />
     <section className="dashboard-card ai-card"><span className="eyebrow">CDVRS AI · YOU STAY IN CONTROL</span><h2>Make space for what matters.</h2><p>Ask for a practical plan using this day’s records, tasks and cloud projects. Suggestions stay here until you approve them.</p>
       <label className="record-field"><span>Your request</span><textarea aria-label="Your request" value={question} onChange={e => setQuestion(e.target.value)} maxLength={2000} /></label>
-      <button disabled={!c.ready || busy || !question.trim()} onClick={organise}>{busy ? 'Working…' : 'Organise my day'}</button>
+      <button disabled={!c.ready || c.status !== 'Saved to cloud' || busy || !question.trim()} onClick={organise}>{busy ? 'Working…' : 'Organise my day'}</button>
       {result && <div className="ai-result"><p style={{ whiteSpace: 'pre-wrap' }}>{result.summary}</p>{result.actions.map((a, i) => <article className="proposal" key={a.id}>
         <div><strong>{a.kind === 'time_block' ? (a.block_id ? 'Edit time block' : 'Plan time block') : a.task_id ? 'Move task' : 'Create task'}: {a.title}</strong>
           <p>{a.date} · {a.kind === 'time_block' ? `${a.start_time}–${a.end_time} (${zone})` : a.priority}</p><p>{a.reason}</p>
