@@ -1,6 +1,6 @@
 # Planner Phase 2
 
-Built on the unmerged Phase 1 feature branch. Production is not deployed by this work.
+Built on the unmerged Phase 1 feature branch. The owner has approved the tested foundation release to Production. Full adaptive planning is tracked separately in ADAPTIVE-PLANNING.md.
 
 ## Saves and multiple devices
 
@@ -185,3 +185,13 @@ Supabase/public Google settings and an authenticated Production AI connection,
 register its final origin with Google, merge only after owner sign-off and test
 the deployed Production flow. The Preview service-access token is deployment
 scoped and temporary; it is not a Production credential.
+
+## Production service identity
+
+Production Planner calls CDVRS AI with a fresh Vercel OIDC token on each request.
+The approved Trusted Sources entry grants Planner Production → AI Production and
+Planner Preview → AI Preview only; default self-access is preserved. Production
+never uses the temporary Preview share secret. The official server-only helper
+is pinned to @vercel/oidc 3.5.0; the shipped dependency audit reports no production
+vulnerabilities. The Google web client also authorises the Production Planner
+origin while retaining its Preview origin and read-only Calendar scope.

@@ -30,3 +30,8 @@ test('approved handoff uses the dedicated AI endpoint and returns a conversation
   assert.equal(res.body.url,'https://handoff-preview.vercel.app/?conversation=89eafdc7-082d-47ea-a235-d105db372128');assert.ok(!res.body.url.includes('_vercel_share'));
  } finally {globalThis.fetch=savedFetch;delete process.env.CDVRS_AI_URL;}
 });
+test('Production uses a fresh OIDC token on every call and never a Preview secret',async()=>{
+ const {aiAccessHeaders}=await import('../server/ai-access.js');process.env.VERCEL_ENV='production';process.env.CDVRS_AI_PREVIEW_BYPASS='must-not-be-used';let n=0;
+ try{const first=await aiAccessHeaders('https://cdvrs-ai.vercel.app',async()=>`fresh-${++n}`),second=await aiAccessHeaders('https://cdvrs-ai.vercel.app',async()=>`fresh-${++n}`);assert.equal(first['x-vercel-trusted-oidc-idp-token'],'fresh-1');assert.equal(second['x-vercel-trusted-oidc-idp-token'],'fresh-2');assert.equal(first.Cookie,undefined);await assert.rejects(()=>aiAccessHeaders('https://cdvrs-ai.vercel.app',async()=>''));}
+ finally{delete process.env.VERCEL_ENV;delete process.env.CDVRS_AI_PREVIEW_BYPASS;}
+});

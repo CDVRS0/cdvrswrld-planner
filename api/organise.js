@@ -1,4 +1,4 @@
-import { previewCookie } from '../server/ai-access.js';
+import { aiAccessHeaders } from '../server/ai-access.js';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const authorization = req.headers.authorization;
@@ -9,8 +9,7 @@ export default async function handler(req, res) {
   if (body.length > 60000) return res.status(413).json({ error: 'Planner request is too large.' });
   try {
     const headers = { 'Content-Type': 'application/json', Authorization: authorization };
-    const cookie = await previewCookie(process.env.CDVRS_AI_URL);
-    if (cookie) headers.Cookie = cookie;
+    Object.assign(headers, await aiAccessHeaders(process.env.CDVRS_AI_URL));
     const upstream = await fetch(new URL(req.body?.operation === 'handoff' ? '/api/planner/handoff' : '/api/planner/organise', process.env.CDVRS_AI_URL), {
       method: 'POST', headers, body, signal: AbortSignal.timeout(100000),
     });

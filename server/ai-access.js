@@ -1,3 +1,4 @@
+import { getVercelOidcToken } from '@vercel/oidc';
 // The browser calls its own origin; provider credentials stay in CDVRS AI.
 let previewAccess;
 export async function previewCookie(base) {
@@ -12,4 +13,15 @@ export async function previewCookie(base) {
   if (!cookie) throw new Error('Preview access could not be established');
   previewAccess = { base, cookie, expires: Date.now() + 15 * 60 * 1000 };
   return cookie;
+}
+
+// Production uses a fresh, short-lived project token; never a Preview share secret.
+export async function aiAccessHeaders(base, tokenReader = getVercelOidcToken) {
+  if (process.env.VERCEL_ENV === 'production') {
+    const token = await tokenReader();
+    if (!token) throw new Error('Production project authentication is unavailable');
+    return { 'x-vercel-trusted-oidc-idp-token': token };
+  }
+  const cookie = await previewCookie(base);
+  return cookie ? { Cookie: cookie } : {};
 }
