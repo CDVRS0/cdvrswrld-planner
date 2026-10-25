@@ -357,7 +357,8 @@ export default function App() {
 
   const activeDate = getDayDate(activeDayIdx);
   const activeKey = dateKey(activeDate);
-  const activeDayData = p.week.days[activeKey] || { blocks: [], record: {} };
+  const storedDayKey = p.legacyDateKeys ? activeDate.toISOString().slice(0, 10) : activeKey;
+  const activeDayData = p.week.days[storedDayKey] || { blocks: [], record: {} };
   const activeCfg = DAYS_CONFIG[activeDayIdx];
 
   return (

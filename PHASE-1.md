@@ -33,6 +33,9 @@ cannot read the old Production browser's records directly.
    choose **Import missing browser records & connect**.
 
 Existing cloud weeks win on conflicts; they are skipped rather than overwritten.
+Legacy v5 British Summer Time date keys are corrected during the confirmed
+import only. The raw backup stays unchanged; ambiguous week collisions stop
+for review instead of dropping either week's records.
 Task IDs are deterministic and scoped to account/source location, making retries
 safe. Nature and weekly records use existing unique keys with ignore-duplicates
 during import. Import reports processed/skipped week counts. A partial failure

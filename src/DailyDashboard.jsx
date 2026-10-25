@@ -84,7 +84,7 @@ export default function DailyDashboard({ day, dk, p, c, onContinue }) {
       {due.map(t => <p key={t.id} className="schedule-note">{dk} · {t.title}</p>)}
     </section></div>
     <section className="dashboard-card ai-card"><span className="eyebrow">CDVRS AI · YOU STAY IN CONTROL</span><h2>Make space for what matters.</h2><p>Ask for a practical plan using this day’s records, tasks and cloud projects. Suggestions stay here until you approve them.</p>
-      <label className="record-field"><span>Your request</span><textarea value={question} onChange={e => setQuestion(e.target.value)} maxLength={2000} /></label>
+      <label className="record-field"><span>Your request</span><textarea aria-label="Your request" value={question} onChange={e => setQuestion(e.target.value)} maxLength={2000} /></label>
       <button disabled={!c.ready || busy || !question.trim()} onClick={organise}>{busy ? 'Working…' : 'Organise my day'}</button>
       {result && <div className="ai-result"><p style={{ whiteSpace: 'pre-wrap' }}>{result.summary}</p>{result.actions.map((a, i) => <article className="proposal" key={a.id}><div><strong>{a.task_id ? 'Move task' : 'Create task'}: {a.title}</strong><p>{a.date} · {a.priority}</p><p>{a.reason}</p></div><button disabled={busy || saved.includes(a.id) || !c.ready} onClick={() => apply(a)}>{saved.includes(a.id) ? 'Saved' : 'Approve & save'}</button><button disabled={saved.includes(a.id)} onClick={() => setResult(r => ({ ...r, actions: r.actions.filter((_, index) => index !== i) }))}>Dismiss</button></article>)}</div>}
       {error && <p role="alert">{error}</p>}

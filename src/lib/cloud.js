@@ -10,6 +10,25 @@ export async function checked(query) {
   return data;
 }
 
+export function normalizeLegacyWeeks(weeks) {
+  const result = {};
+  const nextDate = key => {
+    const d = new Date(`${key}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + 1);
+    return d.toISOString().slice(0, 10);
+  };
+  for (const [key, week] of Object.entries(weeks)) {
+    // v5 used UTC keys for local midnight. During British Summer Time its
+    // Monday weeks and every day key were stored one calendar day early.
+    const shifted = new Date(`${key}T12:00:00Z`).getUTCDay() === 0;
+    const wk = shifted ? nextDate(key) : key;
+    if (result[wk]) throw new Error(`Two browser weeks map to ${wk}. Keep the backup and review these weeks before importing`);
+    result[wk] = shifted ? { ...week, migrationOriginalWeekKey: key,
+      days: Object.fromEntries(Object.entries(week.days).map(([dk, day]) => [nextDate(dk), day])) } : week;
+  }
+  return result;
+}
+
 export function downloadBackup() {
   const raw = localStorage.getItem('cdvrs_planner_v5');
   if (!raw) throw new Error('No saved browser data to back up yet.');

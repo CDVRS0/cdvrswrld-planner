@@ -130,7 +130,8 @@ export function usePlanner() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ weeks }));
   }, [weeks]);
 
-  const week = useMemo(() => weeks[wk] || initWeekData(weekStart), [weekStart, weeks, wk]);
+  const week = useMemo(() => weeks[wk] || weeks[weekStart.toISOString().slice(0, 10)] || initWeekData(weekStart), [weekStart, weeks, wk]);
+  const legacyDateKeys = !weeks[wk] && Boolean(weeks[weekStart.toISOString().slice(0, 10)]);
 
   function updateWeek(fn) {
     setWeeks(prev => ({ ...prev, [wk]: fn(prev[wk] || initWeekData(weekStart)) }));
@@ -157,7 +158,7 @@ export function usePlanner() {
   }
 
   return {
-    weekStart, weekOffset, setWeekOffset, wk, week, weeks, setWeeks,
+    weekStart, weekOffset, setWeekOffset, wk, week, weeks, setWeeks, legacyDateKeys,
     addWeeklyItem: (sectionKey, text) => updateWeeklySection(sectionKey, section => ({
       ...section,
       items: [...section.items, { text, done: false }],

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { cloud, checked, migrationRows, importRows } from '../lib/cloud';
+import { cloud, checked, migrationRows, importRows, normalizeLegacyWeeks } from '../lib/cloud';
 
 export function useCloudPlanner(p) {
   const [user, setUser] = useState(null);
@@ -52,7 +52,7 @@ export function useCloudPlanner(p) {
       let rows = await checked(cloud.from('planner_reflections').select('*').eq('user_id', id).eq('period', 'weekly').limit(2000));
       if (importLocal) {
         const existing = new Map(rows.map(row => [row.period_start, row.notes]));
-        const source = stagedWeeks || current.current;
+        const source = normalizeLegacyWeeks(stagedWeeks || current.current);
         const missing = Object.fromEntries(Object.entries(source).filter(([wk, week]) => !existing.has(wk) || existing.get(wk) === JSON.stringify({ format: 'cdvrs-planner-v5', week })));
         await importRows(cloud, await migrationRows(missing, id));
         setImportReport(`${Object.keys(missing).length} weeks processed. ${Object.keys(source).length - Object.keys(missing).length} existing cloud weeks kept unchanged. Duplicate task and Nature rows were skipped.`);

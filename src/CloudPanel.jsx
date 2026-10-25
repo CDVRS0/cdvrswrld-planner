@@ -49,6 +49,7 @@ export default function CloudPanel({ c, p }) {
         } catch (err) { setUpload(null); setError(err.message); }
       }} /></label>
       <p>Preview addresses have separate browser storage. A backup file is needed to bring records from the original Planner.</p>
+      <p>Older British Summer Time records may have dates stored one day early. Import corrects those legacy date keys while preserving their contents and your original backup. Conflicting week mappings stop for review.</p>
       <label className="consent"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />I have checked my backup and approve {hasLocal ? 'importing missing records or loading cloud records into this browser' : 'connecting this browser to my cloud Planner'}.</label>
       <div className="cloud-actions">{hasLocal && <button disabled={!confirmed || !backedUp} onClick={() => c.activate(true, upload)}>Import missing browser records & connect</button>}
         <button disabled={!confirmed || !backedUp} onClick={() => c.activate(false)}>Load cloud Planner</button></div>
