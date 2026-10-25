@@ -1,0 +1,14 @@
+{
+  "targetProject": "cdvrs-ai",
+  "targetProjectId": "prj_2ieYLVr5P0cwsDqwDtjvHAMDnta5",
+  "trustedSourceToAdd": {
+    "projectId": "prj_Mfmx6WoWYr2vluIohsNoAKTS07BE",
+    "label": "Planner Phase 1 Preview calls to AI Preview",
+    "customAllow": [
+      { "from": { "slugs": ["preview"] }, "to": { "slugs": ["preview"] } }
+    ]
+  },
+  "preserveExistingRules": true,
+  "productionAccessAdded": false,
+  "status": "Awaiting explicit approval before applying access-control change"
+}

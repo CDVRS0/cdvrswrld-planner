@@ -75,11 +75,14 @@ Pending proposals are intentionally not persisted across reloads in Phase 1.
 
 Use `.env.example`; never commit `.env.local`. Required client settings:
 `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. The server-only
-`CDVRS_AI_URL` points to the exact tested AI Preview. For a protected Preview,
-`CDVRS_AI_PREVIEW_BYPASS` holds its deployment-scoped share token. The server
-exchanges it for a short-lived access cookie; it is never sent to the browser.
-The Phase 1 share access expires after 30 days and must be renewed if this
-Preview is kept longer. Supabase ownership checks still protect all user data.
+`CDVRS_AI_URL` points to the exact tested AI Preview. The proxy forwards a
+short-lived Vercel OIDC token through the standard Trusted Sources header;
+provider keys and platform identity never reach the browser. The target AI
+project must approve this one access rule: Planner project `preview` to AI
+project `preview`. Production access is excluded. See `PREVIEW-ACCESS.json`
+for the prepared rule. The access-control change is pending explicit approval.
+Share links are used only for opening the Planner review page, not as service
+credentials. Supabase ownership checks still protect all user data.
 
 ## Validation
 

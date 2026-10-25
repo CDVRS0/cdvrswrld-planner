@@ -1,18 +1,6 @@
-// The browser calls its own origin; provider credentials stay in CDVRS AI.
-let previewAccess;
-async function previewCookie(base) {
-  if (!process.env.CDVRS_AI_PREVIEW_BYPASS) return '';
-  if (previewAccess?.base === base && previewAccess.expires > Date.now()) return previewAccess.cookie;
-  // A deployment-scoped share link establishes its Vercel cookie through GET.
-  // Keep it server-side and scoped to this exact AI deployment.
-  const url = new URL('/', base);
-  url.searchParams.set('_vercel_share', process.env.CDVRS_AI_PREVIEW_BYPASS);
-  const response = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(10000) });
-  const cookie = response.headers.getSetCookie().filter(c => c.startsWith('_vercel_jwt=')).map(c => c.split(';')[0]).join('; ');
-  if (!cookie) throw new Error('Preview access could not be established');
-  previewAccess = { base, cookie, expires: Date.now() + 15 * 60 * 1000 };
-  return cookie;
-}
+import { getVercelOidcToken } from '@vercel/oidc';
+
+// Provider credentials stay in CDVRS AI; caller identity stays with Supabase.
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const authorization = req.headers.authorization;
@@ -21,17 +9,27 @@ export default async function handler(req, res) {
   const body = JSON.stringify(req.body);
   if (!body) return res.status(400).json({ error: 'A Planner request is required.' });
   if (body.length > 60000) return res.status(413).json({ error: 'Planner request is too large.' });
+  let stage = 'preview-identity';
   try {
-    const headers = { 'Content-Type': 'application/json', Authorization: authorization };
-    const cookie = await previewCookie(process.env.CDVRS_AI_URL);
-    if (cookie) headers.Cookie = cookie;
+    const oidcToken = await getVercelOidcToken();
+    const headers = { 'Content-Type': 'application/json', Authorization: authorization,
+      'x-vercel-trusted-oidc-idp-token': oidcToken };
+    stage = 'ai-request';
     const upstream = await fetch(new URL('/api/planner/organise', process.env.CDVRS_AI_URL), {
       method: 'POST', headers, body, signal: AbortSignal.timeout(100000),
     });
-    const data = await upstream.json();
     res.setHeader('Cache-Control', 'no-store');
+    // Platform access failures must not be mistaken for model failures.
+    if (!upstream.ok && !upstream.headers.get('content-type')?.includes('application/json')) {
+      return res.status(503).json({ error: 'The protected AI Preview connection is unavailable. No tasks were changed.' });
+    }
+    const data = await upstream.json();
+    if (upstream.status === 401 && typeof data.error !== 'string') {
+      return res.status(503).json({ error: 'The AI Preview needs the Planner Preview Trusted Sources rule. No tasks were changed.' });
+    }
     return res.status(upstream.status).json(data);
-  } catch {
+  } catch (error) {
+    console.error('Planner AI connection failed', { stage, name: error?.name });
     return res.status(503).json({ error: 'CDVRS AI is unavailable. No tasks were changed.' });
   }
 }
