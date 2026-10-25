@@ -795,3 +795,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 .handoff-message { min-height: 19rem; }
 .handoff-actions, .handoff-actions span { overflow-wrap: anywhere; }
 .handoff-actions a { color: var(--blue); display: inline-block; padding-block: .5rem; text-underline-offset: .2em; }
+
+.agent-chat { background: var(--surface2); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: clamp(16px, 3vw, 28px); min-width: 0; }
+.agent-chat h3 { font-size: 1.35rem; margin: .5rem 0; }
+.agent-chat > p { margin: .75rem 0; line-height: 1.6; }
+.agent-chat-history { max-height: 34rem; overflow-y: auto; overscroll-behavior: contain; margin-block: 1rem; }
+.agent-message { padding: 1rem; margin-block: .75rem; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow-wrap: anywhere; }
+.agent-message.user { border-left: 3px solid var(--blue); }
+.agent-message.assistant { border-left: 3px solid var(--green); }
+.agent-message p { white-space: pre-wrap; line-height: 1.65; margin-top: .5rem; }
+.chat-context-review { margin-block: 1rem; }
+.chat-context-review textarea { min-height: 16rem; }
+.agent-chat [role="status"] { color: var(--muted); }

@@ -126,3 +126,36 @@ preparing or approving a handoff. Account changes unmount private review state.
 completion, repeated carry-forward, mobile width and optional live handoff save
 using a disposable test account. Google Calendar authorization and daily AI
 planning were subsequently confirmed working by the user in Preview.
+
+## Embedded section and Handoff conversations
+
+Each guided section now has a real CDVRS AI chat with cloud-saved messages and
+streamed replies. Existing `ask` fields seed the input and still autosave drafts.
+A selected date and section map to a stable owner-scoped conversation ID, so
+opening another section/day cannot mix histories. Opening/reloading a section
+loads its latest 40 messages without running a model. The server reads fresh
+owner-filtered weekly records and relevant dated/category cloud tasks on send;
+client-supplied record snapshots and owner IDs are ignored. It includes section
+notes/checklists with completion state, energy, intention, objective, carried
+items and commitments. Other sections' detailed notes/checklists are excluded.
+An exact weekly version check rejects sends racing a cloud edit.
+
+07 Handoff has an editable exact-context review and consent checkbox before
+chatting in the Planner. Only that approved context is used for Handoff chat;
+it is also saved with the user message. Changes to the source context invalidate
+the review. The existing optional external handoff workflow remains available.
+
+The chat endpoint reuses the existing provider router, streaming protocol and
+conversation/message tables, with no schema change or normal-chat route change.
+There are no Planner write tools: advice cannot silently create tasks, move time
+blocks or approve changes. Messages save before generation and completed replies
+save before the UI reports cloud confirmation. Duplicate request IDs return the
+saved reply or a pending warning without another model call. Failed generation
+keeps the question and records a failure marker when possible. Reload after an
+interrupted reply before resending. Generation context is bounded to the latest
+12 turns / 16,000 history characters plus the current authorised section, without
+additional embedding, memory-extraction or agent orchestration calls.
+
+`verification/section-chat-test.cjs` uses a disposable account and two live model
+calls to check real section grounding, cloud draft/reply persistence, history
+isolation, Handoff approval, reviewed context and mobile width.

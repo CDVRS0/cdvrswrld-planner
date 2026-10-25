@@ -160,6 +160,7 @@ export function usePlanner() {
 
   return {
     weekStart, weekOffset, setWeekOffset, wk, week, weeks, setWeeks, legacyDateKeys,
+    ensureWeek: () => updateWeek(w => w),
     carryForward: (target, entries) => setWeeks(prev => {
       const targetWeek = weekKey(target);
       const w = prev[targetWeek] || initWeekData(new Date(`${targetWeek}T12:00:00`));

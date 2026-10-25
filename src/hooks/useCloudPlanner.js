@@ -11,6 +11,7 @@ export function useCloudPlanner(p) {
   const [conflicts, setConflicts] = useState([]);
   const [importReport, setImportReport] = useState('');
   const [savedWeeks, setSavedWeeks] = useState({});
+  const [versions, setVersions] = useState({});
   const identity = useRef(null), engine = useRef(null), current = useRef(p.weeks), connecting = useRef(false);
   useEffect(() => { current.current = p.weeks; }, [p.weeks]);
 
@@ -20,7 +21,7 @@ export function useCloudPlanner(p) {
       const id = session?.user?.id || null;
       if (identity.current === id) return;
       identity.current = id; engine.current?.stop(); engine.current = null;
-      setUser(session?.user || null); setConnected(false); setTasks([]); setProjects([]); setConflicts([]);
+      setUser(session?.user || null); setVersions({}); setConnected(false); setTasks([]); setProjects([]); setConflicts([]);
       setNeedsChoice(Boolean(id)); setStatus(id ? 'Choose how to connect your saved data' : 'Sign in to save to cloud');
     });
     return () => { data.subscription.unsubscribe(); engine.current?.stop(); };
@@ -55,6 +56,7 @@ export function useCloudPlanner(p) {
           if (identity.current !== id) return;
           setStatus(value); setConflicts([...collisions]);
           if (value === 'Saved to cloud') {
+            setVersions(Object.fromEntries(Object.entries(sync.base).map(([key, entry]) => [key, entry.version])));
             const serialized = JSON.stringify(sync.local);
             setSavedWeeks(structuredClone(sync.local));
             localStorage.setItem('cdvrs_cloud_connection', JSON.stringify({ userId: id, weeks: serialized }));
@@ -117,7 +119,7 @@ export function useCloudPlanner(p) {
   const pending = connected && !same(p.weeks, savedWeeks);
   return { user, ready: connected && !conflicts.length, needsChoice, conflicts,
     status: pending && status === 'Saved to cloud' ? 'Saving to cloud…' : status,
-    importReport, tasks, projects, activate, refresh,
+    importReport, tasks, projects, activate, refresh, version: versions[p.wk] || null,
     resolve: choices => engine.current?.resolve(choices),
     retry: () => engine.current?.flush(),
     reconnect: () => { engine.current?.stop(); setConnected(false); setNeedsChoice(true); },

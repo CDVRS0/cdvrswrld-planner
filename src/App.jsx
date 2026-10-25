@@ -1,3 +1,4 @@
+import AgentChat from './AgentChat';
 import HandoffActions, { IncomingHandoff } from './HandoffActions';
 import { useState, useEffect } from 'react';
 import { DAYS_CONFIG } from './data/days';
@@ -147,7 +148,7 @@ function HandoffPanel({ record, activeKey }) {
       <p>
         {activeKey === 'nature'
           ? 'This stage captures your state before the work starts.'
-          : 'Later agents should use your state, intention, objective, and carried-forward context before suggesting action.'}
+          : 'Your section chat uses your saved state, intention, objective and carried items when you send a question. Handoff chat shares only the context you review and approve.'}
       </p>
       <div className="handoff-list">
         <div><strong>Energy</strong><span>{nature.energy || 'Not recorded yet'}</span></div>
@@ -203,7 +204,7 @@ function GuidedStep({ block, dayData, dk, p, c }) {
             </div>
           </div>
           <div className="record-grid">
-            {fields.map(([field, label]) => (
+            {fields.filter(([field]) => field !== 'ask').map(([field, label]) => (
               <RecordField
                 key={`${block.stepKey}-${field}`}
                 label={label}
@@ -216,6 +217,7 @@ function GuidedStep({ block, dayData, dk, p, c }) {
         </div>
       </div>
       <HandoffPanel record={dayData.record || {}} activeKey={block.stepKey} />
+      <div className="handoff-full"><AgentChat key={`${c.user?.id}:${dk}:${block.stepKey}`} day={dayData} dk={dk} section={block.stepKey} p={p} c={c} /></div>
       {block.stepKey === 'handoff' && <div className="handoff-full"><IncomingHandoff day={dayData} dk={dk} p={p} c={c} /><HandoffActions day={dayData} dk={dk} p={p} c={c} /></div>}
     </fieldset>
   );
