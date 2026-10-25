@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { appendCarry, weekKey } from '../lib/handoff';
 import { DAYS_CONFIG, WEEKLY_OS_CONFIG } from '../data/days';
 
 const STORAGE_KEY = 'cdvrs_planner_v5';
@@ -13,7 +14,7 @@ function getWeekStart(offset = 0) {
 }
 
 export function dateKey(d) {
-  return d.toISOString().slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function initWeekData(weekStart) {
@@ -130,7 +131,8 @@ export function usePlanner() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ weeks }));
   }, [weeks]);
 
-  const week = useMemo(() => weeks[wk] || initWeekData(weekStart), [weekStart, weeks, wk]);
+  const week = useMemo(() => weeks[wk] || weeks[weekStart.toISOString().slice(0, 10)] || initWeekData(weekStart), [weekStart, weeks, wk]);
+  const legacyDateKeys = !weeks[wk] && Boolean(weeks[weekStart.toISOString().slice(0, 10)]);
 
   function updateWeek(fn) {
     setWeeks(prev => ({ ...prev, [wk]: fn(prev[wk] || initWeekData(weekStart)) }));
@@ -157,7 +159,25 @@ export function usePlanner() {
   }
 
   return {
-    weekStart, weekOffset, setWeekOffset, wk, week,
+    weekStart, weekOffset, setWeekOffset, wk, week, weeks, setWeeks, legacyDateKeys,
+    ensureWeek: () => updateWeek(w => w),
+    carryForward: (target, entries) => setWeeks(prev => {
+      const targetWeek = weekKey(target);
+      const w = prev[targetWeek] || initWeekData(new Date(`${targetWeek}T12:00:00`));
+      return { ...prev, [targetWeek]: { ...w, days: { ...w.days, [target]: appendCarry(w.days[target], entries) } } };
+    }),
+    importCalendarEvents: (events, timeZone) => updateWeek(w => {
+      const days = { ...w.days };
+      for (const [date, day] of Object.entries(days)) {
+        const updated = new Map((day.calendarEvents || []).map(event => [event.id, event]));
+        for (const event of events.filter(item => item.date === date)) {
+          if (event.cancelled) updated.delete(event.id);
+          else updated.set(event.id, event);
+        }
+        days[date] = { ...day, calendarEvents: [...updated.values()] };
+      }
+      return { ...w, days, timeZone };
+    }),
     addWeeklyItem: (sectionKey, text) => updateWeeklySection(sectionKey, section => ({
       ...section,
       items: [...section.items, { text, done: false }],

@@ -1,0 +1,25 @@
+{
+  "targetProject": "cdvrs-ai",
+  "targetProjectId": "prj_2ieYLVr5P0cwsDqwDtjvHAMDnta5",
+  "trustedSourceToAdd": {
+    "projectId": "prj_Mfmx6WoWYr2vluIohsNoAKTS07BE",
+    "label": "Planner Phase 1 Preview calls to AI Preview",
+    "customAllow": [
+      {
+        "from": {
+          "slugs": [
+            "preview"
+          ]
+        },
+        "to": {
+          "slugs": [
+            "preview"
+          ]
+        }
+      }
+    ]
+  },
+  "preserveExistingRules": true,
+  "productionAccessAdded": false,
+  "status": "Approved by user, but Vercel rejected the setting with 404: Deployment Protection Trusted Sources not found. Existing settings preserved; exact-deployment private share access is used instead."
+}

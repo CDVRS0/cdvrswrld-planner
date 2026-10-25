@@ -1,7 +1,14 @@
+import { previousHandoff } from './lib/handoff';
+import AgentChat from './AgentChat';
+import HandoffActions, { IncomingHandoff, PreviousDayHandoff } from './HandoffActions';
 import { useState, useEffect } from 'react';
 import { DAYS_CONFIG } from './data/days';
 import { usePlanner, dateKey } from './hooks/usePlanner';
 import './App.css';
+import { useCloudPlanner } from './hooks/useCloudPlanner';
+import CloudPanel from './CloudPanel';
+import DailyDashboard from './DailyDashboard';
+import CalendarPanel from './CalendarPanel';
 
 const FLOW_STEPS = [
   { key: 'nature', label: 'Nature', number: '01' },
@@ -106,16 +113,6 @@ function getTasks(week) {
   return Object.values(week.days).flatMap(day => day.blocks.flatMap(block => block.tasks));
 }
 
-function dayStats(dayData) {
-  const tasks = dayData.blocks.flatMap(block => block.tasks);
-  const done = tasks.filter(task => task.done).length;
-  return {
-    done,
-    total: tasks.length,
-    pct: tasks.length === 0 ? 0 : Math.round((done / tasks.length) * 100),
-  };
-}
-
 function CheckItem({ item, onToggle, onDelete }) {
   return (
     <div className={`check-item${item.done ? ' done' : ''}`}>
@@ -131,15 +128,15 @@ function RecordField({ label, value, onChange, singleLine }) {
     <label className="record-field">
       <span>{label}</span>
       {singleLine ? (
-        <input value={value || ''} onChange={e => onChange(e.target.value)} />
+        <input aria-label={label} value={value || ''} onChange={e => onChange(e.target.value)} />
       ) : (
-        <textarea value={value || ''} onChange={e => onChange(e.target.value)} />
+        <textarea aria-label={label} value={value || ''} onChange={e => onChange(e.target.value)} />
       )}
     </label>
   );
 }
 
-function HandoffPanel({ record, activeKey }) {
+function HandoffPanel({ record, activeKey, previous }) {
   const nature = record.nature || {};
   const plan = record.plan || {};
   const handoff = record.handoff || {};
@@ -152,13 +149,16 @@ function HandoffPanel({ record, activeKey }) {
       <p>
         {activeKey === 'nature'
           ? 'This stage captures your state before the work starts.'
-          : 'Later agents should use your state, intention, objective, and carried-forward context before suggesting action.'}
+          : 'Your section chat uses your saved state, intention, objective and carried items when you send a question. Handoff chat shares only the context you review and approve.'}
       </p>
       <div className="handoff-list">
         <div><strong>Energy</strong><span>{nature.energy || 'Not recorded yet'}</span></div>
         <div><strong>Intention</strong><span>{nature.intention || 'Not recorded yet'}</span></div>
         <div><strong>Main objective</strong><span>{plan.objective || 'Not planned yet'}</span></div>
-        <div><strong>Carry forward</strong><span>{handoff.carryForward || 'Nothing captured yet'}</span></div>
+        <div><strong>Carry forward</strong><span>{handoff.carryForward || (Object.keys(handoff.incoming || {}).length ? 'Approved from earlier days' : 'Nothing approved yet')}</span>
+          {Object.values(handoff.incoming || {}).sort((a, b) => a.sourceDate.localeCompare(b.sourceDate) || a.text.localeCompare(b.text)).map(item => <p className="carried-context" key={item.id}><span>{item.text}</span><small>From {item.sourceDate}{item.done ? ' · complete' : ''}</small></p>)}
+        </div>
+        {previous?.day?.record?.handoff?.summary && <div><strong>Previous day · {previous.sourceDate}</strong><span>{previous.day.record.handoff.summary}</span><small>Review carry-forward to add this to today’s AI context.</small></div>}
       </div>
       {lowEnergy && (
         <p className="agent-note">Energy looks low, so the plan should bias toward high-value first actions and fewer open loops.</p>
@@ -167,7 +167,7 @@ function HandoffPanel({ record, activeKey }) {
   );
 }
 
-function GuidedStep({ block, dayData, dk, p }) {
+function GuidedStep({ block, dayData, dk, p, c }) {
   const [input, setInput] = useState('');
   const record = dayData.record?.[block.stepKey] || {};
   const fields = FIELD_GROUPS[block.stepKey] || [];
@@ -181,7 +181,7 @@ function GuidedStep({ block, dayData, dk, p }) {
   };
 
   return (
-    <section className={`guided-step ${block.layer}`}>
+    <fieldset disabled={!p.canEdit} className={`guided-step ${block.layer}`}>
       <div className="guided-main">
         <div className="step-heading">
           <span className="step-number">{block.time}</span>
@@ -208,7 +208,7 @@ function GuidedStep({ block, dayData, dk, p }) {
             </div>
           </div>
           <div className="record-grid">
-            {fields.map(([field, label]) => (
+            {fields.filter(([field]) => field !== 'ask').map(([field, label]) => (
               <RecordField
                 key={`${block.stepKey}-${field}`}
                 label={label}
@@ -220,31 +220,16 @@ function GuidedStep({ block, dayData, dk, p }) {
           </div>
         </div>
       </div>
-      <HandoffPanel record={dayData.record || {}} activeKey={block.stepKey} />
-    </section>
+      <HandoffPanel record={dayData.record || {}} activeKey={block.stepKey} previous={previousHandoff(p.weeks, dk)} />
+      <div className="handoff-full"><AgentChat key={`${c.user?.id}:${dk}:${block.stepKey}`} day={dayData} dk={dk} section={block.stepKey} p={p} c={c} /></div>
+      {block.stepKey === 'handoff' && <div className="handoff-full"><PreviousDayHandoff day={dayData} dk={dk} p={p} c={c} /><IncomingHandoff day={dayData} dk={dk} p={p} c={c} /><HandoffActions day={dayData} dk={dk} p={p} c={c} /></div>}
+    </fieldset>
   );
 }
 
-function StartDay({ cfg, dateStr, stats, onContinue }) {
-  return (
-    <section className="start-day">
-      <span className="eyebrow">{dateStr}</span>
-      <h1>Good morning, Cam.</h1>
-      <p>Here's your day. Let's go through it one stage at a time.</p>
-      <div className="start-summary">
-        <div><strong>{cfg.theme}</strong><span>{cfg.focus}</span></div>
-        <div><strong>{stats.done}/{stats.total}</strong><span>Daily record checks complete</span></div>
-      </div>
-      <button className="primary-action" type="button" onClick={onContinue}>Continue</button>
-    </section>
-  );
-}
-
-function GuidedDay({ cfg, dayDate, dayData, p }) {
+function GuidedDay({ dayDate, dayData, p, c }) {
   const [activeStep, setActiveStep] = useState('start');
   const dk = dateKey(dayDate);
-  const stats = dayStats(dayData);
-  const dateStr = dayDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   const currentIndex = FLOW_STEPS.findIndex(step => step.key === activeStep);
   const currentBlock = dayData.blocks.find(block => block.stepKey === activeStep);
 
@@ -266,7 +251,7 @@ function GuidedDay({ cfg, dayDate, dayData, p }) {
 
   return (
     <main className="guided-day-layout">
-      <nav className="flow-rail" aria-label="Daily OS flow">
+      <nav className="flow-rail" aria-label="Daily OS flow"><p className="rail-title">DAILY WORKSPACE</p>
         <button type="button" className={activeStep === 'start' ? 'active' : ''} onClick={() => setActiveStep('start')}>Start</button>
         {FLOW_STEPS.map(step => (
           <button key={step.key} type="button" className={activeStep === step.key ? 'active' : ''} onClick={() => setActiveStep(step.key)}>
@@ -277,9 +262,9 @@ function GuidedDay({ cfg, dayDate, dayData, p }) {
 
       <div className="guided-stage">
         {activeStep === 'start' ? (
-          <StartDay cfg={cfg} dateStr={dateStr} stats={stats} onContinue={goNext} />
+          <DailyDashboard day={dayData} dk={dk} p={p} c={c} onContinue={goNext} />
         ) : (
-          <GuidedStep block={currentBlock} dayData={dayData} dk={dk} p={p} />
+          currentBlock ? <GuidedStep key={dk + activeStep} block={currentBlock} dayData={dayData} dk={dk} p={p} c={c} /> : <p>This stage has no saved block.</p>
         )}
 
         <div className="step-controls">
@@ -302,7 +287,7 @@ function WeeklySection({ section, p }) {
   };
 
   return (
-    <article className={`weekly-section ${section.key}`}>
+    <fieldset disabled={!p.canEdit} className={`weekly-section ${section.key}`}>
       <div className="weekly-section-head">
         <div>
           <span className="eyebrow">{section.emoji}</span>
@@ -325,7 +310,7 @@ function WeeklySection({ section, p }) {
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} placeholder={`Add to ${section.label.toLowerCase()}...`} />
         <button type="button" onClick={submit}>Add</button>
       </div>
-    </article>
+    </fieldset>
   );
 }
 
@@ -352,7 +337,9 @@ function WeekView({ p, weekStart }) {
           <span className="eyebrow">AI context</span>
           <h3>OS Notes</h3>
         </div>
-        <textarea className="notes-ta" value={p.week.notes} onChange={e => p.setNotes(e.target.value)} placeholder="Notion links, decisions, source-of-truth notes, agent context..." />
+        <p className="schedule-note">Shared with section chats and daily planning. Handoff chat includes these notes in your context review. Linked pages are not opened automatically.</p>
+        {p.week.notes.length > 4000 && <p role="status">AI reads the first 4,000 characters; the full notes remain saved.</p>}
+        <textarea aria-label="OS Notes" className="notes-ta" disabled={!p.canEdit} value={p.week.notes} onChange={e => p.setNotes(e.target.value)} placeholder="Notion links, decisions, source-of-truth notes, agent context..." />
       </section>
     </main>
   );
@@ -365,6 +352,7 @@ const Icons = {
 
 export default function App() {
   const p = usePlanner();
+  const c = useCloudPlanner(p);
   const [theme, toggleTheme] = useTheme();
   const [viewMode, setViewMode] = useState('day');
   const [activeDayIdx, setActiveDayIdx] = useState(() => {
@@ -380,15 +368,15 @@ export default function App() {
 
   const activeDate = getDayDate(activeDayIdx);
   const activeKey = dateKey(activeDate);
-  const activeDayData = p.week.days[activeKey] || { blocks: [], record: {} };
+  const storedDayKey = p.legacyDateKeys ? activeDate.toISOString().slice(0, 10) : activeKey;
+  const activeDayData = p.week.days[storedDayKey] || { blocks: [], record: {} };
   const activeCfg = DAYS_CONFIG[activeDayIdx];
 
   return (
     <div className="app">
       <header className="app-header">
         <div>
-          <div className="logo">CDVRSWRLD OS</div>
-          <div className="tagline">Start Day {'>'} Nature {'>'} Plan {'>'} Work {'>'} Social {'>'} Review</div>
+          <div className="planner-brand"><span className="planner-brand-mark" aria-hidden="true">C<span>↗</span></span><div><div className="logo">CDVRSWRLD <span>PLANNER</span></div><div className="tagline">YOUR PERSONAL OPERATING SYSTEM</div></div></div>
         </div>
         <div className="header-right">
           <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label="Toggle theme">{theme === 'dark' ? 'Light' : 'Dark'}</button>
@@ -403,6 +391,9 @@ export default function App() {
           </div>
         </div>
       </header>
+
+      <CloudPanel c={c} p={p} />
+      <CalendarPanel key={c.user?.id || 'signed-out'} p={p} c={c} />
 
       <div className="day-tabs">
         {DAYS_CONFIG.map((cfg, i) => {
@@ -424,11 +415,13 @@ export default function App() {
         })}
       </div>
 
+      <div className="planner-editor">
       {viewMode === 'day' ? (
-        <GuidedDay cfg={activeCfg} dayDate={activeDate} dayData={activeDayData} p={p} />
+        <GuidedDay key={`${c.user?.id || 'signed-out'}:${activeKey}`} cfg={activeCfg} dayDate={activeDate} dayData={activeDayData} p={{ ...p, canEdit: c.ready }} c={c} />
       ) : (
-        <WeekView p={p} weekStart={p.weekStart} />
+        <WeekView p={{ ...p, canEdit: c.ready }} weekStart={p.weekStart} />
       )}
+      </div>
 
       <nav className="bottom-nav" aria-label="Mobile view">
         <div className="bottom-nav-inner">

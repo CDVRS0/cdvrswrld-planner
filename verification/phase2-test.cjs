@@ -1,0 +1,61 @@
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'/Users/grindandghost/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const assert=require('node:assert/strict');
+const base=process.env.PLANNER_BASE_URL||'http://127.0.0.1:5187/';
+const email=process.env.PLANNER_TEST_EMAIL,password=process.env.PLANNER_TEST_PASSWORD;
+const saved=page=>page.locator('.cloud-panel [role=status]').filter({hasText:/^Saved to cloud$/}).waitFor({timeout:30000});
+async function login(context){
+ const page=await context.newPage();page.setDefaultTimeout(20000);global.pages.push(page);
+ const origin=new URL(base).origin;if(process.env.PLANNER_PREVIEW_OIDC)await page.route(origin+'/**',route=>route.continue({headers:{...route.request().headers(),'x-vercel-trusted-oidc-idp-token':process.env.PLANNER_PREVIEW_OIDC}}));
+ await page.goto(base);await page.getByLabel('Email',{exact:true}).fill(email);await page.getByLabel('Password',{exact:true}).fill(password);await page.getByRole('button',{name:'Sign in to cloud',exact:true}).click();
+ await page.getByRole('checkbox',{name:/I have checked my backup/}).check();await page.getByRole('button',{name:'Load cloud Planner',exact:true}).click();await saved(page);return page;
+}
+(async()=>{
+ const browser=await chromium.launch({headless:true,executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});global.browser=browser;global.pages=[];
+ const one=await browser.newContext({viewport:{width:1440,height:1000},timezoneId:'Europe/London',acceptDownloads:true});
+ const two=await browser.newContext({viewport:{width:1280,height:900},timezoneId:'Europe/London',acceptDownloads:true});
+ const page=await login(one);await page.getByRole('button',{name:'Open daily flow'}).click();await page.getByLabel('Energy',{exact:true}).fill('Base energy');await saved(page);
+ const other=await login(two);await other.getByRole('button',{name:'Open daily flow'}).click();
+ await other.getByLabel("Today's personal intention",{exact:true}).fill('Seen on both devices');await saved(other);
+ await page.waitForFunction(()=>document.querySelector('[aria-label="Today\'s personal intention"]')?.value==='Seen on both devices',{timeout:30000});
+ console.log('Realtime update visible without reload');
+ await Promise.all([page.getByLabel('Energy',{exact:true}).fill('Independent energy'),other.getByLabel("Today's personal intention",{exact:true}).fill('Independent intention')]);
+ await saved(page);await saved(other);
+ await page.waitForFunction(()=>document.querySelector('[aria-label="Today\'s personal intention"]')?.value==='Independent intention',{timeout:30000});
+ await other.waitForFunction(()=>document.querySelector('[aria-label="Energy"]')?.value==='Independent energy',{timeout:30000});
+ console.log('Independent edits merged');
+ let release,entered;const gate=new Promise(r=>release=r),waiting=new Promise(r=>entered=r);let hold=true;
+ await page.route('**/rpc/save_planner_week_v2',async route=>{if(hold){hold=false;entered();await gate;}await route.continue();});
+ await page.getByLabel('Energy',{exact:true}).fill('Chosen local energy');await waiting;
+ await other.getByLabel('Energy',{exact:true}).fill('Other device energy');await saved(other);release();
+ await page.getByRole('heading',{name:'Both devices changed the same fields'}).waitFor();
+ assert.equal(await page.getByRole('button',{name:'Save chosen values'}).isDisabled(),true);
+ const backup=page.waitForEvent('download');await page.getByRole('button',{name:'Download browser backup',exact:true}).click();await backup;
+ await page.locator('.conflict-review input[type=radio]').first().check();await page.getByRole('button',{name:'Save chosen values'}).click();await saved(page);
+ await other.waitForFunction(()=>document.querySelector('[aria-label="Energy"]')?.value==='Chosen local energy',{timeout:30000});
+ await page.unroute('**/rpc/save_planner_week_v2');console.log('Conflict choice saved without dropping other fields');
+ await page.route('**/rpc/save_planner_week_v2',route=>route.abort('failed'));
+ await page.getByLabel('Energy',{exact:true}).fill('Retained while offline');await page.locator('.cloud-panel [role=status]').filter({hasText:'Not saved:'}).waitFor();
+ assert.ok((await page.evaluate(()=>localStorage.getItem('cdvrs_planner_v5'))).includes('Retained while offline'));
+ await page.unroute('**/rpc/save_planner_week_v2');await page.evaluate(()=>window.dispatchEvent(new Event('online')));await saved(page);console.log('Online reconnection saved retained edit');
+ await page.getByRole('button',{name:'Start',exact:true}).click();await page.getByText('Google & Apple Calendar',{exact:true}).click();
+ const ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nUID:phase2-meeting\r\nDTSTART:20261025T090000Z\r\nDTEND:20261025T100000Z\r\nSUMMARY:Calendar acceptance meeting\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n';
+ await page.locator('input[accept=".ics,text/calendar"]').setInputFiles({name:'google-calendar.ics',mimeType:'text/calendar',buffer:Buffer.from(ics)});
+ await page.getByRole('heading',{name:'1 occurrences in this week'}).waitFor();assert.equal(await page.getByRole('button',{name:'Approve calendar import'}).isDisabled(),true);
+ const beforeImport=page.waitForEvent('download');await page.getByRole('button',{name:'Back up Planner before import'}).click();await beforeImport;
+ await page.getByRole('checkbox',{name:/I approve adding\/updating these calendar occurrences/}).check();await page.getByRole('button',{name:'Approve calendar import'}).click();await saved(page);
+ await page.locator('.calendar-events').getByText('Calendar acceptance meeting',{exact:false}).waitFor();
+ await page.getByText('Google & Apple Calendar',{exact:true}).click();
+ if(process.env.TEST_LIVE_AI==='1'){
+  const request=page.waitForResponse(r=>r.url().includes('/api/organise'),{timeout:110000});
+  await page.getByLabel('Your request',{exact:true}).fill('Propose exactly one time_block titled "Creative acceptance session" on 2026-10-25 from 11:00 to 12:00. No task creation. Keep it brief.');
+  await page.getByRole('button',{name:'Organise my day',exact:true}).click();const response=await request;const data=await response.json();assert.equal(response.status(),200,JSON.stringify(data));assert.ok(data.actions.some(a=>a.kind==='time_block'));
+  await page.locator('.proposal').first().waitFor();assert.equal(await page.locator('.time-blocks').count(),0);
+  await page.getByRole('button',{name:'Approve & save',exact:true}).click();await saved(page);await page.locator('.time-blocks').getByText('Creative acceptance session',{exact:false}).waitFor();
+  await page.getByText('Google & Apple Calendar',{exact:true}).click();const exportFile=page.waitForEvent('download');await page.getByRole('button',{name:'Export this week’s Planner schedule (.ics)'}).click();const file=await exportFile;
+  const body=require('fs').readFileSync(await file.path(),'utf8');assert.ok(body.includes('Creative acceptance session'));assert.ok(!body.includes('Calendar acceptance meeting'));
+  console.log('Live AI timed proposal approved and exported');
+ }
+ await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'verification/phase2-desktop.png',fullPage:true});await page.setViewportSize({width:390,height:844});await page.screenshot({path:'verification/phase2-mobile.png',fullPage:true});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ console.log(JSON.stringify({realtime:true,independentMerge:true,conflictReview:true,offlineRetry:true,calendarImportConsent:true,mobileNoOverflow:true,liveAI:process.env.TEST_LIVE_AI==='1'}));
+ await browser.close();
+})().catch(async e=>{console.error(e.message);for(const page of global.pages||[])console.log((await page.locator('body').innerText()).slice(-6000));await global.browser?.close();process.exitCode=1});
