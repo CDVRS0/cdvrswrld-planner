@@ -1,0 +1,39 @@
+.ceed-assistant-launcher { position: fixed; z-index: 70; right: 20px; bottom: max(24px,env(safe-area-inset-bottom)); width: 88px; height: 88px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--ceed-accent); cursor: grab; touch-action: none; user-select: none; isolation: isolate; }
+.ceed-assistant-launcher:active { cursor: grabbing; }
+.ceed-assistant-launcher img { position: relative; width: 80px; height: 80px; object-fit: contain; pointer-events: none; filter: drop-shadow(0 2px 8px rgba(133,103,190,.3)); }
+.ceed-assistant-halo { position: absolute; inset: 8px; border-radius: 50%; background: radial-gradient(circle,rgba(176,148,231,.23),rgba(176,148,231,.04) 65%,transparent 72%); z-index: -1; }
+.ceed-assistant-label { position: absolute; bottom: -3px; font: 8px ui-monospace,monospace; letter-spacing: .18em; color: var(--ceed-muted); }
+.ceed-assistant-panel { position: fixed; z-index: 69; right: 116px; bottom: 24px; width: min(430px,calc(100vw - 36px)); height: min(720px,calc(100dvh - 48px)); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--ceed-line-strong); border-radius: 24px; background: var(--ceed-bg); color: var(--ceed-text); box-shadow: 0 20px 90px rgba(26,17,44,.23); }
+.ceed-assistant-panel[hidden] { display: none; }
+.ceed-assistant-heading { display: flex; flex: 0 0 auto; justify-content: space-between; gap: 12px; align-items: center; padding: 17px 20px; border-bottom: 1px solid var(--ceed-line); background: var(--ceed-panel); }
+.ceed-assistant-heading strong { font: 13px ui-monospace,monospace; letter-spacing: .07em; }
+.ceed-assistant-heading small { display: block; color: var(--ceed-muted); font-size: 10px; margin-top: 5px; }
+.ceed-assistant-heading button { border: 1px solid var(--ceed-line); border-radius: 50%; background: transparent; color: var(--ceed-text); width: 34px; height: 34px; flex-shrink: 0; font-size: 22px; cursor: pointer; }
+.ceed-assistant-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 18px; font-size: 12px; }
+.ceed-assistant-body .agent-chat { border: 0; padding: 0; box-shadow: none; border-radius: 0; background: transparent; }
+.ceed-assistant-body .agent-chat h3 { font-size: 20px; }
+.ceed-assistant-body .agent-chat > p { font-size: 11px; }
+.ceed-assistant-body .agent-chat-history { max-height: 260px; }
+.ceed-assistant-body textarea { max-width: 100%; min-height: 75px; }
+.ceed-assistant-body .handoff-buttons { gap: 8px; }
+.ceed-assistant-body .handoff-buttons button { font-size: 11px; padding: 8px 10px; min-height: 36px; }
+.ceed-assistant-body .training-coach h2 { font-size: 22px; }
+.ceed-assistant-body .training-coach .coach-prompts { display: flex; flex-wrap: wrap; gap: 6px; }
+.ceed-assistant-body .training-coach .coach-prompts button { padding: 8px; font-size: 10px; }
+.ceed-assistant-body .training-coach form { display: grid; gap: 10px; margin: 18px 0; }
+.ceed-assistant-body .training-coach textarea { padding: 12px; border: 1px solid var(--ceed-line); border-radius: 14px; background: var(--ceed-input); color: var(--ceed-text); }
+.ceed-assistant-body .coach-answer { white-space: pre-wrap; line-height: 1.7; }
+@media(max-width:760px) {
+  .ceed-assistant-launcher { right: 10px; bottom: max(90px,calc(env(safe-area-inset-bottom) + 80px)); width: 76px; height: 76px; }
+  .ceed-assistant-launcher img { width: 72px; height: 72px; }
+  .ceed-assistant-panel { left: 12px; right: 12px; bottom: max(96px,calc(env(safe-area-inset-bottom) + 86px)); width: auto; height: min(660px,calc(100dvh - 120px)); border-radius: 20px; }
+}
+@media(prefers-reduced-motion:no-preference) { .ceed-assistant-halo { animation: ceed-glow 5s ease-in-out infinite alternate; }.ceed-assistant-panel:not([hidden]) { animation: ceed-panel-in .16s ease-out; } }
+@keyframes ceed-glow { to { opacity: .55; transform: scale(.93); } }
+@keyframes ceed-panel-in { from { opacity: 0; transform: translateY(6px); } }
+
+@media(max-width:760px) {
+  .ceed-assistant-launcher[aria-expanded=true],html[data-theme] .workspace .ceed-assistant-launcher[aria-expanded=true] { bottom: max(12px,env(safe-area-inset-bottom)); }
+  .app-shell .ceed-assistant-launcher[aria-expanded=true] { bottom: max(90px,calc(env(safe-area-inset-bottom) + 80px)); }
+  .app-shell .ceed-assistant-panel { bottom: 176px; height: min(660px,calc(100dvh - 200px)); }
+}

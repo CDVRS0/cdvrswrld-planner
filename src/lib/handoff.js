@@ -1,3 +1,4 @@
+import { isOSPrompt } from './daily-actions.js';
 export function nextDay(date) {
   const d = new Date(`${date}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + 1);
   return d.toISOString().slice(0, 10);
@@ -14,10 +15,10 @@ export function carryCandidates(day, date, tasks = []) {
     if (text) entries.push({ id: JSON.stringify([date, field, text]), text, label, sourceDate: date, kind: 'note' });
   }
   for (const [bi, block] of (day.blocks || []).entries()) for (const [ti, task] of block.tasks.entries()) {
-    if (!task.done && task.text?.trim()) entries.push({ id: JSON.stringify([date, bi, ti, task.text]), text: task.text, label: block.label, sourceDate: date, kind: 'action' });
+    if (!task.done && !task.dismissed && !isOSPrompt(task, block, date) && task.text?.trim()) entries.push({ id: JSON.stringify([date, bi, ti, task.text]), text: task.text, label: block.label, sourceDate: date, kind: 'action' });
   }
   for (const item of Object.values(day.record?.handoff?.incoming || {})) {
-    if (!item.done && (!item.taskId || tasks.some(t => t.id === item.taskId && !['done', 'cancelled'].includes(t.status)))) entries.push(item);
+    if (!item.done && !item.dismissed && (!item.taskId || tasks.some(t => t.id === item.taskId && !['done', 'cancelled'].includes(t.status)))) entries.push(item);
   }
   for (const task of tasks) {
     if (task.source !== 'migration' && !['done', 'cancelled'].includes(task.status) && (task.scheduled_date <= date || task.due_date && task.due_date <= date)) {

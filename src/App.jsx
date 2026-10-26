@@ -1,3 +1,6 @@
+import CeedAssistantLauncher from './ceed/CeedAssistantLauncher';
+import './ceed/ceed-assistant.css';
+import { isOSPrompt } from './lib/daily-actions';
 import { CeedAppearance, ThemeControl } from './ceed/CeedAppearance';
 import { previousHandoff } from './lib/handoff';
 import AgentChat from './AgentChat';
@@ -107,11 +110,12 @@ function getTasks(week) {
   return Object.values(week.days).flatMap(day => day.blocks.flatMap(block => block.tasks));
 }
 
-function CheckItem({ item, onToggle, onDelete }) {
+function CheckItem({ item, onToggle, onDelete, onPlan }) {
   return (
     <div className={`check-item${item.done ? ' done' : ''}`}>
       <input type="checkbox" checked={item.done} onChange={onToggle} />
       <span>{item.text}</span>
+      {onPlan && <button className="plan-prompt-button" type="button" onClick={onPlan}>Add to today</button>}
       <button className="icon-btn danger" type="button" onClick={onDelete} aria-label="Delete item">x</button>
     </div>
   );
@@ -165,8 +169,9 @@ function GuidedStep({ block, dayData, dk, p, c }) {
   const [input, setInput] = useState('');
   const record = dayData.record?.[block.stepKey] || {};
   const fields = FIELD_GROUPS[block.stepKey] || [];
-  const done = block.tasks.filter(task => task.done).length;
-  const pct = block.tasks.length === 0 ? 0 : Math.round((done / block.tasks.length) * 100);
+  const visibleTasks = block.tasks.filter(task => !task.dismissed);
+  const done = visibleTasks.filter(task => task.done).length;
+  const pct = visibleTasks.length === 0 ? 0 : Math.round((done / visibleTasks.length) * 100);
   const blockIndex = dayData.blocks.findIndex(item => item.stepKey === block.stepKey);
   const submit = () => {
     if (!input.trim()) return;
@@ -183,15 +188,16 @@ function GuidedStep({ block, dayData, dk, p, c }) {
             <span className="eyebrow">{block.agent}</span>
             <h2>{block.label}</h2>
           </div>
-          <strong>{done}/{block.tasks.length}</strong>
+          <strong>{done}/{visibleTasks.length}</strong>
         </div>
         <div className="day-progress-bar"><div className="day-progress-fill" style={{ width: `${pct}%` }} /></div>
         <div className="step-grid">
           <div className="step-checklist">
-            {block.tasks.map((task, taskIndex) => (
+            {block.tasks.map((task, taskIndex) => !task.dismissed && (
               <CheckItem
                 key={`${block.stepKey}-${task.text}-${taskIndex}`}
                 item={task}
+                onPlan={!task.done && isOSPrompt(task, block, dk) ? () => p.planTask(dk, blockIndex, taskIndex) : undefined}
                 onToggle={() => p.toggleTask(dk, blockIndex, taskIndex)}
                 onDelete={() => p.deleteTask(dk, blockIndex, taskIndex)}
               />
@@ -411,6 +417,9 @@ export default function App() {
         })}
       </div>
 
+      <CeedAssistantLauncher key={`assistant:${c.user?.id || 'signed-out'}:${activeKey}`} title="CEED · Your day">
+        {c.ready ? <AgentChat day={activeDayData} dk={activeKey} section="handoff" p={{ ...p, canEdit: c.ready }} c={c} /> : <p>Sign in and connect your cloud Planner to chat with CEED about this day.</p>}
+      </CeedAssistantLauncher>
       <div className="planner-editor">
       {viewMode === 'day' ? (
         <GuidedDay key={`${c.user?.id || 'signed-out'}:${activeKey}`} cfg={activeCfg} dayDate={activeDate} dayData={activeDayData} p={{ ...p, canEdit: c.ready }} c={c} />

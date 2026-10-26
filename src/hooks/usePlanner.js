@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { changeDayActions } from '../lib/daily-actions';
 import { appendCarry, weekKey } from '../lib/handoff';
 import { DAYS_CONFIG, WEEKLY_OS_CONFIG } from '../data/days';
 
@@ -30,7 +31,7 @@ function initWeekData(weekStart) {
         label: b.label,
         agent: b.agent,
         layer: b.layer,
-        tasks: b.tasks.map(t => ({ text: t, done: false })),
+        tasks: b.tasks.map(t => ({ text: t, done: false, source: 'os-prompt' })),
       })),
       record: {
         nature: {
@@ -203,11 +204,13 @@ export function usePlanner() {
         },
       },
     })),
+    changeDailyActions: (dk, keys, change) => updateDay(dk, day => changeDayActions(day, dk, keys, change)),
+    planTask: (dk, bi, ti) => updateBlock(dk, bi, b => ({ ...b, tasks: b.tasks.map((t, i) => i === ti ? { ...t, id: t.id || crypto.randomUUID(), source: 'manual' } : t) })),
     toggleTask: (dk, bi, ti) => updateBlock(dk, bi, b => ({
       ...b, tasks: b.tasks.map((t, i) => i === ti ? { ...t, done: !t.done } : t),
     })),
     addTask: (dk, bi, text) => updateBlock(dk, bi, b => ({
-      ...b, tasks: [...b.tasks, { text, done: false }],
+      ...b, tasks: [...b.tasks, { id: crypto.randomUUID(), text, done: false, source: 'manual' }],
     })),
     deleteTask: (dk, bi, ti) => updateBlock(dk, bi, b => ({
       ...b, tasks: b.tasks.filter((_, i) => i !== ti),
