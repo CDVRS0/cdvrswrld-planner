@@ -117,7 +117,7 @@ export default function DailyDashboard({ day, dk, p, c, onContinue }) {
       <label className="record-field"><span>Scheduled commitments</span><textarea aria-label="Scheduled commitments" disabled={!c.ready} value={day.record?.plan?.commitments || ''} onChange={e => p.updateDayRecord(dk, 'plan', 'commitments', e.target.value)} placeholder={'09:00 Client call\n14:00 Creative session'} /></label>
       <p className="schedule-note">One commitment per line: HH:MM followed by its name. Times are local to your day.</p>
       <ol className="timeline">{commitments.map((item, i) => <li key={`${item.time}/${i}`}><span className="timeline-time">{item.time}</span><div><strong>{item.title}</strong></div></li>)}</ol>
-      <details open={!commitments.length}><summary>Daily OS flow</summary><ol className="timeline">{day.blocks.map((b, bi) => <li key={`${b.stepKey}/${bi}`}><span className="timeline-time">{b.time}</span><div><strong>{b.label}</strong><small>{b.tasks.filter(t => t.done).length}/{b.tasks.length} actions complete</small></div></li>)}</ol></details>
+      <details><summary>Daily OS flow</summary><ol className="timeline">{day.blocks.map((b, bi) => <li key={`${b.stepKey}/${bi}`}><span className="timeline-time">{b.time}</span><div><strong>{b.label}</strong><small>{b.tasks.filter(t => t.done).length}/{b.tasks.length} actions complete</small></div></li>)}</ol></details>
       {due.map(t => <p key={t.id} className="schedule-note">{dk} · {t.title}</p>)}
     </section></div>
     <HandoffActions day={day} dk={dk} p={p} c={c} />
