@@ -858,3 +858,68 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .guided-step { padding: 16px; }
   .previous-handoff, .reflection-review { padding: 15px; }
 }
+
+/* CEED workspace: open canvas, compact tools, one clear place to plan. */
+html[data-theme] .app { max-width: 1280px; padding: 0 32px 48px; }
+html[data-theme] .app-header { background: transparent; backdrop-filter: none; gap: 24px; margin-bottom: 16px; min-height: 84px; }
+html[data-theme] .header-right { gap: 16px; }
+html[data-theme] .view-toggle { display: flex; border-radius: 12px; background: var(--ceed-panel); }
+html[data-theme] .view-toggle button { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; border-radius: 9px; }
+html[data-theme] .view-toggle svg { width: 15px; height: 15px; }
+html[data-theme] .planner-connections { margin-bottom: 20px; border-bottom: 1px solid var(--ceed-line); }
+html[data-theme] .planner-connections > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0 16px; cursor: pointer; font-size: 12px; color: var(--ceed-muted); list-style: none; }
+html[data-theme] .planner-connections > summary::before { content: '+'; font-size: 18px; }
+html[data-theme] .planner-connections[open] > summary::before { content: '−'; }
+html[data-theme] .planner-connections > summary > span:first-child { flex: 1; }
+html[data-theme] .connection-status { font-size: 11px; }
+html[data-theme] .planner-connections .cloud-panel { margin-top: 8px; }
+html[data-theme] .day-tabs { gap: 6px; margin-bottom: 24px; }
+html[data-theme] .day-tab { background: transparent; border-color: transparent; padding: 11px 12px; box-shadow: none; }
+html[data-theme] .day-tab.active { background: var(--ceed-panel); border-color: var(--ceed-line); }
+html[data-theme] .day-tab small { font-size: 10px; font-weight: 400; margin-top: 5px; }
+html[data-theme] .guided-day-layout { grid-template-columns: 180px minmax(0, 1fr); gap: 40px; }
+html[data-theme] .flow-rail { background: transparent; border: 0; padding: 10px 0; backdrop-filter: none; box-shadow: none; }
+html[data-theme] .flow-rail button { font-size: 13px; font-weight: 450; border-radius: 10px; }
+html[data-theme] .flow-rail span { font-weight: 400; font-size: 10px; }
+html[data-theme] .dashboard { gap: 28px; max-width: 920px; margin-inline: auto; width: 100%; }
+html[data-theme] .daily-hero { border: 0; background: transparent; box-shadow: none; padding: 24px 0 0; border-radius: 0; }
+html[data-theme] .daily-hero h1 { margin: 18px 0 12px; font-size: clamp(32px, 3.8vw, 46px); font-weight: 450; }
+html[data-theme] .daily-hero > p { font-size: 13px; max-width: 580px; }
+html[data-theme] .daily-metrics { margin: 24px 0 18px; gap: 20px; max-width: 520px; }
+html[data-theme] .daily-metrics > span { padding: 0; border: 0; border-radius: 0; background: transparent; font-size: 11px; color: var(--ceed-muted); }
+html[data-theme] .daily-metrics strong { color: var(--ceed-text); font-weight: 450; font-size: 26px; }
+html[data-theme] .dashboard-card { padding: 24px; border-radius: 20px; box-shadow: none; }
+html[data-theme] .dashboard-card h2 { font-size: 21px; font-weight: 500; letter-spacing: -.035em; }
+html[data-theme] .dashboard-columns { gap: 16px; }
+html[data-theme] .ai-card { padding: 24px; border-radius: 24px; background: var(--ceed-panel); border-color: var(--ceed-line); box-shadow: 0 8px 38px var(--ceed-glow); }
+html[data-theme] .ai-card > p { margin-bottom: 16px; font-size: 12px; max-width: 640px; }
+html[data-theme] .ai-card .record-field { margin-bottom: 12px; }
+html[data-theme] .ai-card .record-field > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+html[data-theme] .ai-card textarea { background: transparent; border: 0; padding: 6px 0; min-height: 70px; box-shadow: none; }
+html[data-theme] .ai-card > button { background: var(--ceed-solid); color: var(--ceed-on-accent); border: 0; border-radius: 12px; min-height: 42px; padding: 10px 16px; }
+html[data-theme] .dashboard-task { font-size: 13px; padding-block: 13px; }
+html[data-theme] .dashboard-task small { font-size: 10px; }
+@media(max-width: 1000px) {
+  html[data-theme] .guided-day-layout { grid-template-columns: 1fr; gap: 16px; }
+  html[data-theme] .flow-rail { display: flex; overflow-x: auto; position: static; padding: 4px 0 12px; gap: 5px; border-bottom: 1px solid var(--ceed-line); border-radius: 0; }
+  html[data-theme] .flow-rail button { flex: 0 0 auto; width: auto; }
+  html[data-theme] .flow-rail .rail-title { display: none; }
+}
+@media(max-width: 640px) {
+  html[data-theme] .app { padding: 0 18px 32px; }
+  html[data-theme] .app-header { gap: 16px; padding: 22px 0 16px; }
+  html[data-theme] .header-right { display: grid; grid-template-columns: auto 1fr; gap: 14px; }
+  html[data-theme] .week-nav { grid-column: 1 / -1; }
+  html[data-theme] .week-nav button { border: 0; background: transparent; min-width: 44px; }
+  html[data-theme] .tagline { font-size: 8px; }
+  html[data-theme] .day-tabs { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); overflow: visible; gap: 2px; margin-bottom: 16px; }
+  html[data-theme] .day-tab { min-width: 0; padding: 10px 2px; font-size: 11px; border-radius: 10px; }
+  html[data-theme] .day-tab small,html[data-theme] .today-tab > span::after { display: none; }
+  html[data-theme] .today-tab { color: var(--ceed-accent); }
+  html[data-theme] .flow-rail button { min-height: 40px; font-size: 12px; padding: 8px 11px; }
+  html[data-theme] .flow-rail span { display: none; }
+  html[data-theme] .daily-hero { padding-top: 8px; }
+  html[data-theme] .dashboard { gap: 24px; }
+  html[data-theme] .dashboard-columns { grid-template-columns: 1fr; }
+  html[data-theme] .dashboard-card,html[data-theme] .ai-card { padding: 20px; }
+}

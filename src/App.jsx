@@ -374,8 +374,8 @@ export default function App() {
         <div className="header-right">
           <ThemeControl />
           <div className="view-toggle" role="group" aria-label="OS view">
-            <button type="button" className={viewMode === 'day' ? 'active' : ''} onClick={() => setViewMode('day')}>Day</button>
-            <button type="button" className={viewMode === 'week' ? 'active' : ''} onClick={() => setViewMode('week')}>Week</button>
+            <button type="button" className={viewMode === 'day' ? 'active' : ''} onClick={() => setViewMode('day')}>{Icons.day}<span>Day</span></button>
+            <button type="button" className={viewMode === 'week' ? 'active' : ''} onClick={() => setViewMode('week')}>{Icons.week}<span>Week</span></button>
           </div>
           <div className="week-nav">
             <button type="button" onClick={() => p.setWeekOffset(o => o - 1)} aria-label="Previous week">←</button>
@@ -385,8 +385,11 @@ export default function App() {
         </div>
       </header>
 
-      <CloudPanel c={c} p={p} />
-      <CalendarPanel key={c.user?.id || 'signed-out'} p={p} c={c} />
+      <details className="planner-connections" open={!c.ready || c.conflicts?.length > 0}>
+        <summary><span>Cloud & calendar</span><span className="connection-status" role="status">{c.status}</span></summary>
+        <CloudPanel c={c} p={p} />
+        <CalendarPanel key={c.user?.id || 'signed-out'} p={p} c={c} />
+      </details>
 
       <div className="day-tabs">
         {DAYS_CONFIG.map((cfg, i) => {
@@ -416,16 +419,7 @@ export default function App() {
       )}
       </div>
 
-      <nav className="bottom-nav" aria-label="Mobile view">
-        <div className="bottom-nav-inner">
-          <button type="button" className={`nav-btn${viewMode === 'day' ? ' active' : ''}`} onClick={() => setViewMode('day')}>
-            {Icons.day}<span>Day</span>
-          </button>
-          <button type="button" className={`nav-btn${viewMode === 'week' ? ' active' : ''}`} onClick={() => setViewMode('week')}>
-            {Icons.week}<span>Week</span>
-          </button>
-        </div>
-      </nav>
+
     </div>
   );
 }

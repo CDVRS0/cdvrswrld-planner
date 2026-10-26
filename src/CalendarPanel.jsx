@@ -33,7 +33,7 @@ export default function CalendarPanel({ p, c }) {
     {preview && preview.wk === p.wk && <div className="calendar-preview"><h3>{preview.events.length} occurrences in this week</h3>
       <ul>{preview.events.slice(0, 50).map(event => <li key={event.id}>{event.date} · {event.allDay ? 'All day' : timeInZone(new Date(event.start), zone)} · {event.title}{event.cancelled ? ' (remove cancelled occurrence)' : ''}</li>)}</ul>
       {preview.events.length > 50 && <p>Showing the first 50 of {preview.events.length} occurrences.</p>}
-      <label className="consent"><input type="checkbox" checked={approved} onChange={e => setApproved(e.target.checked)} />I approve adding/updating these calendar occurrences in my Planner cloud. They can be included when I ask CDVRS AI to plan my day.</label>
+      <label className="consent"><input type="checkbox" checked={approved} onChange={e => setApproved(e.target.checked)} />I approve adding/updating these calendar occurrences in my Planner cloud. They can be included when I ask CEED to plan my day.</label>
       <button disabled={!c.ready} onClick={() => { try { downloadBackup(); setBackup(signature); } catch (err) { setError(err.message); } }}>Back up Planner before import</button>
       <button disabled={!c.ready || !approved || backup !== signature || !preview.events.length} onClick={() => {
         p.importCalendarEvents(preview.events, zone); setPreview(null); setApproved(false); setMessage('Calendar changes added. Check Saved to cloud before closing.');

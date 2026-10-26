@@ -75,10 +75,22 @@ export default function DailyDashboard({ day, dk, p, c, onContinue }) {
   return <div className="dashboard">
     <section className="daily-hero"><span className="eyebrow">YOUR DAY, WITH INTENTION</span>
       <p>{new Date(`${dk}T12:00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-      <h1>A little clarity.<br />Room to create.</h1>
+      <h1>What matters today?</h1>
       <p>{day.record?.plan?.objective || 'Set an intention, choose your priorities, and work through the day at your pace.'}</p>
       <div className="daily-metrics"><span><strong>{outstanding.length + due.length}</strong> outstanding</span><span><strong>{local.filter(t => t.done).length}</strong> complete</span><span><strong>{c.projects.filter(p => p.status === 'active').length}</strong> active projects</span></div>
       <button className="primary-action" onClick={onContinue}>Open daily flow →</button>
+    </section>
+    <section className="dashboard-card ai-card"><span className="eyebrow">CEED · YOU STAY IN CONTROL</span><h2>Let’s make room for your day.</h2><p>Ask for a practical plan using this day’s records, tasks and cloud projects. Suggestions stay here until you approve them.</p>
+      <label className="record-field"><span>Your request</span><textarea aria-label="Your request" value={question} onChange={e => setQuestion(e.target.value)} maxLength={2000} /></label>
+      <button disabled={!c.ready || c.status !== 'Saved to cloud' || busy || !question.trim()} onClick={organise}>{busy ? 'Working…' : 'Organise my day'}</button>
+      {result && <div className="ai-result"><p style={{ whiteSpace: 'pre-wrap' }}>{result.summary}</p>{result.actions.map((a, i) => <article className="proposal" key={a.id}>
+        <div><strong>{a.kind === 'time_block' ? (a.block_id ? 'Edit time block' : 'Plan time block') : a.task_id ? 'Move task' : 'Create task'}: {a.title}</strong>
+          <p>{a.date} · {a.kind === 'time_block' ? `${a.start_time}–${a.end_time} (${zone})` : a.priority}</p><p>{a.reason}</p>
+          {a.conflicts?.length > 0 && <p role="alert">Overlaps {a.conflicts.join(', ')}. Ask for a different time.</p>}</div>
+        <button disabled={busy || saved.includes(a.id) || !c.ready || Boolean(a.conflicts?.length)} onClick={() => apply(a)}>{saved.includes(a.id) ? (a.kind === 'time_block' && c.status !== 'Saved to cloud' ? 'Pending cloud save' : 'Saved') : 'Approve & save'}</button>
+        <button disabled={saved.includes(a.id)} onClick={() => setResult(r => ({ ...r, actions: r.actions.filter((_, index) => index !== i) }))}>Dismiss</button>
+      </article>)}</div>}
+      {error && <p role="alert">{error}</p>}
     </section>
     <PreviousDayHandoff day={day} dk={dk} p={p} c={c} />
     <IncomingHandoff day={day} dk={dk} p={p} c={c} />
@@ -109,17 +121,6 @@ export default function DailyDashboard({ day, dk, p, c, onContinue }) {
       {due.map(t => <p key={t.id} className="schedule-note">{dk} · {t.title}</p>)}
     </section></div>
     <HandoffActions day={day} dk={dk} p={p} c={c} />
-    <section className="dashboard-card ai-card"><span className="eyebrow">CEED · YOU STAY IN CONTROL</span><h2>Make space for what matters.</h2><p>Ask for a practical plan using this day’s records, tasks and cloud projects. Suggestions stay here until you approve them.</p>
-      <label className="record-field"><span>Your request</span><textarea aria-label="Your request" value={question} onChange={e => setQuestion(e.target.value)} maxLength={2000} /></label>
-      <button disabled={!c.ready || c.status !== 'Saved to cloud' || busy || !question.trim()} onClick={organise}>{busy ? 'Working…' : 'Organise my day'}</button>
-      {result && <div className="ai-result"><p style={{ whiteSpace: 'pre-wrap' }}>{result.summary}</p>{result.actions.map((a, i) => <article className="proposal" key={a.id}>
-        <div><strong>{a.kind === 'time_block' ? (a.block_id ? 'Edit time block' : 'Plan time block') : a.task_id ? 'Move task' : 'Create task'}: {a.title}</strong>
-          <p>{a.date} · {a.kind === 'time_block' ? `${a.start_time}–${a.end_time} (${zone})` : a.priority}</p><p>{a.reason}</p>
-          {a.conflicts?.length > 0 && <p role="alert">Overlaps {a.conflicts.join(', ')}. Ask for a different time.</p>}</div>
-        <button disabled={busy || saved.includes(a.id) || !c.ready || Boolean(a.conflicts?.length)} onClick={() => apply(a)}>{saved.includes(a.id) ? (a.kind === 'time_block' && c.status !== 'Saved to cloud' ? 'Pending cloud save' : 'Saved') : 'Approve & save'}</button>
-        <button disabled={saved.includes(a.id)} onClick={() => setResult(r => ({ ...r, actions: r.actions.filter((_, index) => index !== i) }))}>Dismiss</button>
-      </article>)}</div>}
-      {error && <p role="alert">{error}</p>}
-    </section>
+
   </div>;
 }

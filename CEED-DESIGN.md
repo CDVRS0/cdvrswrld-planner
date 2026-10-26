@@ -17,3 +17,5 @@ is selected again. Appearance preference is stored per browser/app; business,
 Planner and training records continue using existing cloud sync.
 
 This work is on an isolated feature branch and is presented in Preview first.
+
+The follow-up layout pass moves connection and calendar controls into one expandable area with an always-visible cloud status, removes duplicate mobile navigation, simplifies the weekday strip, and places the CEED planning composer above the task and schedule panels. Daily OS navigation and approval flows remain available.
