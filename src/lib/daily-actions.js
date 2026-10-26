@@ -1,12 +1,13 @@
 import { DAYS_CONFIG } from '../data/days.js';
 
+const osPrompts = new Set(DAYS_CONFIG.flatMap(cfg => cfg.blocks.flatMap(block => block.tasks.map(text => JSON.stringify([block.stepKey, block.label, text])))));
 const active = task => !['done', 'cancelled'].includes(task.status);
-export function isOSPrompt(task, block, date) {
+export function isOSPrompt(task, block) {
   if (task.source === 'manual' || task.source === 'ai' || task.id) return false;
   if (task.source === 'os-prompt') return true;
-  const weekday = (new Date(`${date}T12:00:00Z`).getUTCDay() + 6) % 7;
-  const template = DAYS_CONFIG[weekday]?.blocks.find(b => b.stepKey === block.stepKey && b.label === block.label);
-  return Boolean(template?.tasks.includes(task.text));
+  // Legacy browser keys can be shifted by BST; recognise the prompt across all
+  // weekdays without rewriting saved dates or guessing which records to delete.
+  return osPrompts.has(JSON.stringify([block.stepKey, block.label, task.text]));
 }
 export function localActions(day, date) {
   const result = [];

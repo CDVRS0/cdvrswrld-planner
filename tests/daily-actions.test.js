@@ -64,3 +64,12 @@ test('earlier real OS actions enter the backlog without default prompts or edits
  day.record.handoff.incoming={[model.backlog[0].incomingId]:{id:model.backlog[0].incomingId,text:'Finish the mix',kind:'action',sourceDate:'2026-10-25'}};
  assert.equal(dailyActions(day,date,[],weeks).backlog.length,0);assert.equal(dailyActions(day,date,[],weeks).unfinished.length,1);
 });
+
+
+test('legacy BST-shifted day keys do not turn built-in prompts into backlog work',()=>{
+ const shifted={blocks:DAYS_CONFIG[0].blocks.map(b=>({...b,tasks:b.tasks.map(text=>({text,done:false}))}))};
+ const weeks={'2026-09-20':{days:{'2026-09-20':shifted}}};
+ assert.equal(dailyActions(fresh(),date,[],weeks).backlog.length,0);
+ shifted.blocks[0].tasks.push({id:'explicit',source:'manual',text:'CDVRS Sports planning',done:false});
+ assert.equal(dailyActions(fresh(),date,[],weeks).backlog.length,1);
+});
