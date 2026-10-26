@@ -51,7 +51,7 @@ export default function CloudPanel({ c, p }) {
       <label>Email<input type="email" name="email" autoComplete="username" required /></label>
       <label>Password<input type="password" name="password" autoComplete="current-password" required /></label>
       <button disabled={busy}>{busy ? 'Signing in…' : 'Sign in to cloud'}</button>
-      <span>Use your CDVRS AI account. Sign in to edit and save.</span>
+      <span>Use your CEED account. Sign in to edit and save.</span>
     </form>}
     {c.needsChoice && <div className="migration-choice">
       <h3>Connect your Planner</h3>

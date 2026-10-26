@@ -15,7 +15,7 @@ export default function AgentChat({ day, dk, section, p, c }) {
   const locked = !c.ready || c.status !== 'Saved to cloud' || !c.version;
   async function request(body, signal) {
     const { data: { session } } = await cloud.auth.getSession();
-    if (!session) throw new Error('Sign in to use CDVRS AI.');
+    if (!session) throw new Error('Sign in to use CEED.');
     return fetch('/api/agent', { method: 'POST', signal, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ date: dk, section, ...body }) });
   }
   async function load(signal) {
@@ -45,7 +45,7 @@ export default function AgentChat({ day, dk, section, p, c }) {
       setApproved(false); setError('Review and approve the current Handoff context before sending.'); return;
     }
     const controller = new AbortController(); active.current = controller;
-    setBusy(true); setError(''); setAnswer(''); setStatus('Connecting to CDVRS AI…');
+    setBusy(true); setError(''); setAnswer(''); setStatus('Connecting to CEED…');
     let accumulated = '', finished = false;
     try {
       const response = await request({ operation: 'send', message: prompt.trim(), requestId: crypto.randomUUID(), expectedVersion: c.version,
@@ -61,7 +61,7 @@ export default function AgentChat({ day, dk, section, p, c }) {
         const event = JSON.parse(line);
         if (event.type === 'saved') { setMessages(items => [...items, { id: event.userId, role: 'user', content: event.content }]); if (prompt.trim() === question.trim()) { setQuestion(''); p.updateDayRecord(dk, section, 'ask', ''); } }
         else if (event.type === 'status') setStatus(event.message);
-        else if (event.type === 'delta') { accumulated += event.text; setAnswer(accumulated); setStatus('CDVRS AI is replying…'); }
+        else if (event.type === 'delta') { accumulated += event.text; setAnswer(accumulated); setStatus('CEED is replying…'); }
         else if (event.type === 'done') { setMessages(items => [...items, { id: crypto.randomUUID(), role: 'assistant', content: event.message }]); setAnswer(''); setStatus('Conversation saved to cloud'); finished = true; }
         else if (event.type === 'error') throw new Error(event.error);
       }
@@ -71,8 +71,8 @@ export default function AgentChat({ day, dk, section, p, c }) {
     } finally { if (mounted.current) setBusy(false); active.current = null; }
   }
   return <section className="agent-chat" aria-label={`${names[section]} chat`}>
-    <span className="eyebrow">CDVRS AI · {dk}</span><h3>Chat with your {names[section]} Agent</h3>
-    <p>{section === 'handoff' ? 'Review the exact Planner context, then continue the conversation here.' : `Ask what to do in ${names[section]} for this day. Sending shares this section’s saved tasks and notes, energy, main objective, carried items calendar commitments and weekly OS Notes with CDVRS AI.`}</p>
+    <span className="eyebrow">CEED · {dk}</span><h3>Chat with your {names[section]} Agent</h3>
+    <p>{section === 'handoff' ? 'Review the exact Planner context, then continue the conversation here.' : `Ask what to do in ${names[section]} for this day. Sending shares this section’s saved tasks and notes, energy, main objective, carried items calendar commitments and weekly OS Notes with CEED.`}</p>
     <p className="schedule-note">Messages and replies save to cloud. Suggestions do not change tasks or schedules; use the Planner’s approval controls to save a change. Each day and section has its own chat.</p>
     {!c.version && c.ready && <button type="button" onClick={p.ensureWeek}>Save this day to cloud for chat</button>}
     {section === 'handoff' && <div className="chat-context-review"><button type="button" disabled={locked || busy} onClick={() => { setReview({ text: currentHandoff, initialText: currentHandoff }); setApproved(false); setError(''); }}>Review context for this chat</button>
@@ -83,8 +83,8 @@ export default function AgentChat({ day, dk, section, p, c }) {
     </div>}
     <div className="agent-chat-history" role="log" aria-label={`${names[section]} conversation`}>
       {!messages.length && !loading && <p>No messages yet. Ask for the next useful action.</p>}
-      {messages.map(message => { const [main, context] = message.content.split('\n\nAPPROVED HANDOFF CONTEXT:\n'); return <article key={message.id} className={`agent-message ${message.role}`}><strong>{message.role === 'assistant' ? 'CDVRS AI' : 'You'}</strong><p>{main}</p>{section === 'nature' && message.role === 'assistant' && <button type="button" disabled={locked || busy} onClick={() => { setReflection({ text: message.content, original: day.record?.nature?.reflection || '' }); setReflectionApproved(false); }}>Review as AI reflection notes</button>}{context && <details><summary>Approved context shared with this message</summary><p>{context}</p></details>}</article>; })}
-      {answer && <article className="agent-message assistant"><strong>CDVRS AI · replying</strong><p>{answer}</p></article>}
+      {messages.map(message => { const [main, context] = message.content.split('\n\nAPPROVED HANDOFF CONTEXT:\n'); return <article key={message.id} className={`agent-message ${message.role}`}><strong>{message.role === 'assistant' ? 'CEED' : 'You'}</strong><p>{main}</p>{section === 'nature' && message.role === 'assistant' && <button type="button" disabled={locked || busy} onClick={() => { setReflection({ text: message.content, original: day.record?.nature?.reflection || '' }); setReflectionApproved(false); }}>Review as AI reflection notes</button>}{context && <details><summary>Approved context shared with this message</summary><p>{context}</p></details>}</article>; })}
+      {answer && <article className="agent-message assistant"><strong>CEED · replying</strong><p>{answer}</p></article>}
     </div>
     {messages.length >= 40 && <p className="schedule-note">Showing the latest 40 saved messages.</p>}
     {section === 'nature' && reflection && <div className="reflection-review"><h4>Review AI reflection notes</h4><p>{reflection.original ? 'Approval replaces your current reflection notes with this reviewed text.' : 'Approval saves this reflection to your Nature OS notes.'}</p>
@@ -95,8 +95,8 @@ export default function AgentChat({ day, dk, section, p, c }) {
         if ((day.record?.nature?.reflection || '') !== reflection.original) { setError('Your reflection changed. Review it again before saving.'); return; }
         p.updateDayRecord(dk, 'nature', 'reflection', reflection.text); setReflection(null); setStatus('Reflection approved. Check the cloud save status before leaving.');
       }}>Approve & save reflection</button><button type="button" onClick={() => setReflection(null)}>Close reflection review</button></div></div>}
-    <form onSubmit={e => { e.preventDefault(); void send(); }}><label className="record-field"><span>{section === 'handoff' ? 'Ask CDVRS AI about this handoff' : `Ask the ${names[section]} Agent`}</span><textarea aria-label={`Ask the ${names[section]} Agent`} value={question} maxLength={8000} disabled={busy} onChange={e => { setQuestion(e.target.value); p.updateDayRecord(dk, section, 'ask', e.target.value); }} placeholder="What should I focus on here today?" /></label>
-      <div className="handoff-buttons">{section === 'nature' && <button type="button" disabled={locked || busy || loading || needsReload} onClick={() => void send('Reflect on my saved Nature check-in, energy, intention, carried context and OS Notes for this day. Give a brief, grounded reflection and one gentle next step. Do not invent feelings or claim to save anything.')}>Generate AI reflection</button>}<button type="submit" disabled={locked || busy || loading || needsReload || !question.trim() || section === 'handoff' && !approved}>{busy ? 'Replying…' : 'Send to CDVRS AI'}</button>
+    <form onSubmit={e => { e.preventDefault(); void send(); }}><label className="record-field"><span>{section === 'handoff' ? 'Ask CEED about this handoff' : `Ask the ${names[section]} Agent`}</span><textarea aria-label={`Ask the ${names[section]} Agent`} value={question} maxLength={8000} disabled={busy} onChange={e => { setQuestion(e.target.value); p.updateDayRecord(dk, section, 'ask', e.target.value); }} placeholder="What should I focus on here today?" /></label>
+      <div className="handoff-buttons">{section === 'nature' && <button type="button" disabled={locked || busy || loading || needsReload} onClick={() => void send('Reflect on my saved Nature check-in, energy, intention, carried context and OS Notes for this day. Give a brief, grounded reflection and one gentle next step. Do not invent feelings or claim to save anything.')}>Generate AI reflection</button>}<button type="submit" disabled={locked || busy || loading || needsReload || !question.trim() || section === 'handoff' && !approved}>{busy ? 'Replying…' : 'Send to CEED'}</button>
         <button type="button" disabled={locked || busy || loading || needsReload || section === 'handoff' && !approved} onClick={() => void send('Read my unfinished tasks and notes for this section today. Suggest the next three useful actions, respecting my energy and commitments.')}>Suggest what to do here today</button>
         <button type="button" disabled={!c.ready || busy || loading} onClick={() => { historyRequest.current?.abort(); const controller = new AbortController(); historyRequest.current = controller; void load(controller.signal); }}>Reload saved chat</button></div>
     </form>

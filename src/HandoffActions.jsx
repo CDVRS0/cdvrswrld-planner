@@ -59,15 +59,15 @@ export default function HandoffActions({ day, dk, p, c }) {
         body: JSON.stringify({ operation: 'handoff', approved: true, requestId: review.requestId, date: dk, text }) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Handoff could not be saved. Retry this same preview safely.');
-      setLink(result.url); setReview(null); setNotice('Handoff saved in a CDVRS AI conversation. Open it and ask your next question. Sign in with the same account if prompted.');
+      setLink(result.url); setReview(null); setNotice('Handoff saved in a CEED conversation. Open it and ask your next question. Sign in with the same account if prompted.');
     } catch (e) { setError(e.message); } finally { setBusy(false); }
   }
   return <section className="dashboard-card handoff-actions"><span className="eyebrow">NEXT STEPS · YOUR APPROVAL</span><h2>Carry your context forward</h2>
-    <p>Choose unfinished actions and reminders for {target}, or send reviewed context to your existing CDVRS AI chat.</p>
-    <div className="handoff-buttons"><button disabled={locked} onClick={() => preview('carry')}>Review tomorrow’s carry-forward</button><button disabled={locked} onClick={() => preview('ai')}>Review handoff to CDVRS AI</button></div>
+    <p>Choose unfinished actions and reminders for {target}, or send reviewed context to your existing CEED chat.</p>
+    <div className="handoff-buttons"><button disabled={locked} onClick={() => preview('carry')}>Review tomorrow’s carry-forward</button><button disabled={locked} onClick={() => preview('ai')}>Review handoff to CEED</button></div>
     {c.ready && c.status !== 'Saved to cloud' && <p role="status">Finish saving to cloud before preparing a handoff.</p>}
-    {review && <div className="handoff-review"><h3>{review.mode === 'carry' ? `Review items for ${target}` : 'Review what CDVRS AI will receive'}</h3>
-      <p>{review.mode === 'carry' ? 'Only selected items are added to the next day’s handoff checklist. Existing notes are preserved; task dates and calendar events are unchanged.' : 'Selected items and the day context below will be saved as a message in a new CDVRS AI conversation. No AI response or Planner change runs automatically.'}</p>
+    {review && <div className="handoff-review"><h3>{review.mode === 'carry' ? `Review items for ${target}` : 'Review what CEED will receive'}</h3>
+      <p>{review.mode === 'carry' ? 'Only selected items are added to the next day’s handoff checklist. Existing notes are preserved; task dates and calendar events are unchanged.' : 'Selected items and the day context below will be saved as a message in a new CEED conversation. No AI response or Planner change runs automatically.'}</p>
       <div className="handoff-candidates">{review.items.map(item => <label className="dashboard-task" key={item.id}><input type="checkbox" checked={selected.includes(item.id)} disabled={busy} onChange={e => {
         const next = e.target.checked ? [...selected, item.id] : selected.filter(id => id !== item.id); setSelected(next); setApproved(false);
         setText(handoffText(review.source, dk, review.items.filter(value => next.includes(value.id)), p.week.notes || ''));
@@ -75,10 +75,10 @@ export default function HandoffActions({ day, dk, p, c }) {
       {!review.items.length && <p>No new unfinished items or reminders to carry forward.</p>}
       {review.mode === 'ai' && <label className="record-field"><span>Exact handoff message (editable)</span><textarea aria-label="Exact handoff message" className="handoff-message" maxLength={20000} disabled={busy} value={text} onChange={e => { setText(e.target.value); setApproved(false); }} /></label>}
       {review.mode === 'ai' && text.length > 20000 && <p role="alert">Shorten the handoff to 20,000 characters before sending ({text.length.toLocaleString()} currently).</p>}
-      <label className="dashboard-task"><input type="checkbox" disabled={busy} checked={approved} onChange={e => setApproved(e.target.checked)} /><span>{review.mode === 'carry' ? `I approve saving these selected items to ${target}.` : 'I approve sending this message to my CDVRS AI conversation.'}</span></label>
-      <div className="handoff-buttons"><button disabled={locked || !approved || (review.mode === 'carry' ? !selected.length : !text.trim()) || text.length > 20000} onClick={save}>{busy ? 'Saving handoff…' : review.mode === 'carry' ? 'Approve & save to tomorrow' : 'Approve & send to CDVRS AI'}</button><button disabled={busy} onClick={() => { setReview(null); setError(''); }}>Close preview</button></div>
+      <label className="dashboard-task"><input type="checkbox" disabled={busy} checked={approved} onChange={e => setApproved(e.target.checked)} /><span>{review.mode === 'carry' ? `I approve saving these selected items to ${target}.` : 'I approve sending this message to my CEED conversation.'}</span></label>
+      <div className="handoff-buttons"><button disabled={locked || !approved || (review.mode === 'carry' ? !selected.length : !text.trim()) || text.length > 20000} onClick={save}>{busy ? 'Saving handoff…' : review.mode === 'carry' ? 'Approve & save to tomorrow' : 'Approve & send to CEED'}</button><button disabled={busy} onClick={() => { setReview(null); setError(''); }}>Close preview</button></div>
     </div>}
-    {notice && <p role="status">{notice}</p>}{link && <a href={link} target="_blank" rel="noopener noreferrer">Open handoff in CDVRS AI →</a>}{error && <p role="alert">{error}</p>}
+    {notice && <p role="status">{notice}</p>}{link && <a href={link} target="_blank" rel="noopener noreferrer">Open handoff in CEED →</a>}{error && <p role="alert">{error}</p>}
   </section>;
 }
 

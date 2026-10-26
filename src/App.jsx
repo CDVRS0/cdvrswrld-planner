@@ -1,10 +1,12 @@
+import { CeedAppearance, ThemeControl } from './ceed/CeedAppearance';
 import { previousHandoff } from './lib/handoff';
 import AgentChat from './AgentChat';
 import HandoffActions, { IncomingHandoff, PreviousDayHandoff } from './HandoffActions';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { DAYS_CONFIG } from './data/days';
 import { usePlanner, dateKey } from './hooks/usePlanner';
 import './App.css';
+import './ceed/ceed.css';
 import { useCloudPlanner } from './hooks/useCloudPlanner';
 import CloudPanel from './CloudPanel';
 import DailyDashboard from './DailyDashboard';
@@ -100,14 +102,6 @@ function isToday(d) {
   return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
 }
 
-function useTheme() {
-  const [theme, setTheme] = useState(() => localStorage.getItem('cdvrs_theme') || 'dark');
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('cdvrs_theme', theme);
-  }, [theme]);
-  return [theme, () => setTheme(t => t === 'dark' ? 'light' : 'dark')];
-}
 
 function getTasks(week) {
   return Object.values(week.days).flatMap(day => day.blocks.flatMap(block => block.tasks));
@@ -353,7 +347,6 @@ const Icons = {
 export default function App() {
   const p = usePlanner();
   const c = useCloudPlanner(p);
-  const [theme, toggleTheme] = useTheme();
   const [viewMode, setViewMode] = useState('day');
   const [activeDayIdx, setActiveDayIdx] = useState(() => {
     const dow = new Date().getDay();
@@ -373,13 +366,13 @@ export default function App() {
   const activeCfg = DAYS_CONFIG[activeDayIdx];
 
   return (
-    <div className="app">
+    <div className="app"><CeedAppearance />
       <header className="app-header">
         <div>
-          <div className="planner-brand"><span className="planner-brand-mark" aria-hidden="true">C<span>↗</span></span><div><div className="logo">CDVRSWRLD <span>PLANNER</span></div><div className="tagline">YOUR PERSONAL OPERATING SYSTEM</div></div></div>
+          <div className="planner-brand"><span className="ceed-emblem" aria-hidden="true" /><div><div className="logo">CEED <span>PLANNER</span></div><div className="tagline">A LITTLE SPACE FOR YOUR DAY</div></div></div>
         </div>
         <div className="header-right">
-          <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label="Toggle theme">{theme === 'dark' ? 'Light' : 'Dark'}</button>
+          <ThemeControl />
           <div className="view-toggle" role="group" aria-label="OS view">
             <button type="button" className={viewMode === 'day' ? 'active' : ''} onClick={() => setViewMode('day')}>Day</button>
             <button type="button" className={viewMode === 'week' ? 'active' : ''} onClick={() => setViewMode('week')}>Week</button>
