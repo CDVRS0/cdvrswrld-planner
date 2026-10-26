@@ -923,3 +923,26 @@ html[data-theme] .dashboard-task small { font-size: 10px; }
   html[data-theme] .dashboard-columns { grid-template-columns: 1fr; }
   html[data-theme] .dashboard-card,html[data-theme] .ai-card { padding: 20px; }
 }
+
+/* Daily focus separates chosen work from OS prompts. */
+.priority-slots { list-style: decimal-leading-zero; margin: 22px 0 26px; padding-left: 25px; }
+.priority-slots li { padding: 13px 0 13px 7px; border-bottom: 1px solid var(--ceed-line); font-size: 13px; }
+.priority-slots li::marker { color: var(--ceed-accent); font-family: ui-monospace, monospace; }
+.priority-slots button { margin-left: 10px; }
+.daily-action-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 15px 0; border-bottom: 1px solid var(--ceed-line); font-size: 13px; overflow-wrap: anywhere; }
+.daily-action-row label { display: flex; gap: 10px; align-items: flex-start; flex: 1; min-width: 140px; }
+.daily-action-row input { margin-top: 3px; }
+.daily-action-row small { display: block; color: var(--ceed-muted); font-size: 10px; margin-top: 5px; }
+.daily-action-tools { display: flex; flex-wrap: wrap; gap: 7px; }
+html[data-theme] .daily-focus button { color: var(--ceed-text); background: var(--ceed-raised); border: 1px solid var(--ceed-line); border-radius: 10px; font-size: 11px; min-height: 36px; padding: 7px 10px; }
+html[data-theme] .daily-focus button:disabled { opacity: .45; cursor: not-allowed; }
+.daily-focus h3 { margin-top: 20px; font-size: 15px; font-weight: 500; }
+.daily-focus > p { font-size: 12px; line-height: 1.6; }
+.action-count { color: var(--ceed-muted); margin-left: 6px; font-size: 12px; }
+.daily-focus .fresh-day-button { margin: 18px 0 0; }
+.fresh-day-review { margin-top: 20px; padding: 18px; border: 1px solid var(--ceed-line-strong); border-radius: 16px; background: var(--ceed-raised); }
+.fresh-day-review p { font-size: 12px; line-height: 1.7; margin: 12px 0; }
+.fresh-day-review .consent { display: flex; align-items: flex-start; gap: 9px; font-size: 12px; margin: 16px 0; }
+.daily-backlog { margin-top: 26px; }
+.daily-add-action { padding: 0 4px; }
+.plan-prompt-button { flex-shrink: 0; padding: 6px 8px; border: 1px solid var(--ceed-line); border-radius: 9px; background: var(--ceed-raised); color: var(--ceed-text); font-size: 10px; }

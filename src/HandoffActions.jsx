@@ -9,7 +9,7 @@ export function IncomingHandoff({ day, dk, p, c }) {
   if (!Object.keys(incoming).length) return null;
   return <section className="dashboard-card"><span className="eyebrow">CARRIED INTO THIS DAY</span><h2>Your approved handoff</h2>
     <p>These are the items you chose to bring forward. Original day records and task dates stay intact.</p>
-    {Object.values(incoming).sort((a, b) => a.sourceDate.localeCompare(b.sourceDate) || a.text.localeCompare(b.text)).map(item => {
+    {Object.values(incoming).filter(item => !item.dismissed && (!item.taskId || c.tasks.find(t => t.id === item.taskId)?.status !== 'cancelled')).sort((a, b) => a.sourceDate.localeCompare(b.sourceDate) || a.text.localeCompare(b.text)).map(item => {
       const task = item.taskId && c.tasks.find(t => t.id === item.taskId);
       const done = item.taskId ? task && ['done', 'cancelled'].includes(task.status) : item.done;
       return <label className="dashboard-task" key={item.id}><input type="checkbox" checked={Boolean(done)} disabled={!c.ready || busy || Boolean(item.taskId && !task)} onChange={async () => {
