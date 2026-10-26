@@ -31,3 +31,9 @@
 @media(prefers-reduced-motion:no-preference) { .ceed-assistant-halo { animation: ceed-glow 5s ease-in-out infinite alternate; }.ceed-assistant-panel:not([hidden]) { animation: ceed-panel-in .16s ease-out; } }
 @keyframes ceed-glow { to { opacity: .55; transform: scale(.93); } }
 @keyframes ceed-panel-in { from { opacity: 0; transform: translateY(6px); } }
+
+@media(max-width:760px) {
+  .ceed-assistant-launcher[aria-expanded=true],html[data-theme] .workspace .ceed-assistant-launcher[aria-expanded=true] { bottom: max(12px,env(safe-area-inset-bottom)); }
+  .app-shell .ceed-assistant-launcher[aria-expanded=true] { bottom: max(90px,calc(env(safe-area-inset-bottom) + 80px)); }
+  .app-shell .ceed-assistant-panel { bottom: 176px; height: min(660px,calc(100dvh - 200px)); }
+}
