@@ -1,0 +1,89 @@
+/* CEED: soft glass, quiet glow, a little analogue warmth. */
+:root, :root[data-theme="dark"] {
+  --ceed-bg: #111115; --ceed-text: #f1eef6; --ceed-muted: #aaa3b5;
+  --ceed-panel: rgba(33,31,42,.69); --ceed-raised: rgba(46,42,57,.7); --ceed-input: rgba(19,18,25,.66);
+  --ceed-line: rgba(221,207,249,.13); --ceed-line-strong: rgba(221,207,249,.23);
+  --ceed-accent: #b9a4ef; --ceed-solid: #c0aeed; --ceed-on-accent: #251c38;
+  --ceed-peach: rgba(194,133,105,.085); --ceed-glow: rgba(140,112,201,.14); --ceed-shadow: 0 14px 45px rgba(0,0,0,.13);
+  --bg: var(--ceed-bg); --background: var(--ceed-bg); --surface: var(--ceed-panel); --surface2: var(--ceed-raised);
+  --panel: var(--ceed-panel); --panel2: var(--ceed-raised); --text: var(--ceed-text); --foreground: var(--ceed-text);
+  --muted: var(--ceed-muted); --muted2: var(--ceed-muted); --line: var(--ceed-line); --line-strong: var(--ceed-line-strong);
+  --blue: var(--ceed-accent); --accent: var(--ceed-accent); --accent2: var(--ceed-solid); --ink: var(--ceed-text);
+  --os-bg: var(--ceed-bg); --os-panel: var(--ceed-panel); --os-panel-raised: var(--ceed-raised); --os-line: var(--ceed-line);
+  --os-text: var(--ceed-text); --os-muted: var(--ceed-muted); --os-blue: var(--ceed-accent); --os-blue-light: var(--ceed-accent);
+}
+:root[data-theme="light"] {
+  --ceed-bg: #f4f1ec; --ceed-text: #292532; --ceed-muted: #706776;
+  --ceed-panel: rgba(255,255,255,.67); --ceed-raised: rgba(243,237,247,.78); --ceed-input: rgba(255,255,255,.76);
+  --ceed-line: rgba(78,57,97,.13); --ceed-line-strong: rgba(78,57,97,.24);
+  --ceed-accent: #6a50a0; --ceed-solid: #6c51a1; --ceed-on-accent: #fff;
+  --ceed-peach: rgba(227,167,129,.14); --ceed-glow: rgba(156,133,198,.13); --ceed-shadow: 0 14px 45px rgba(88,63,111,.045);
+}
+html { background: var(--ceed-bg); }
+body { color: var(--ceed-text); background: radial-gradient(ellipse at 75% 0%,var(--ceed-glow),transparent 50%),radial-gradient(ellipse at 8% 12%,var(--ceed-peach),transparent 44%),var(--ceed-bg); background-attachment: fixed; font-family: var(--font-geist-sans,system-ui),ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+button,input,textarea,select { font: inherit; }
+button,a { -webkit-tap-highlight-color: transparent; }
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible { outline: 2px solid var(--ceed-accent); outline-offset: 3px; }
+::selection { background: color-mix(in srgb,var(--ceed-accent) 28%,transparent); }
+.ceed-sr-only { position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap; }
+.ceed-theme-control { display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid var(--ceed-line);border-radius:999px;background:var(--ceed-panel);color:var(--ceed-muted);font-size:11px;white-space:nowrap; }
+.ceed-theme-control select { border:0;background:transparent;color:var(--ceed-text);font-size:11px;max-width:125px;padding:3px 1px;cursor:pointer; }
+.ceed-theme-control option { color:var(--ceed-text);background:var(--ceed-bg); }
+.ceed-theme-dot { width:6px;height:6px;border-radius:50%;background:var(--ceed-accent);box-shadow:0 0 10px var(--ceed-glow); }
+.ceed-emblem { display:inline-block;flex:none;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f3ddcc 0%,#c9b2e9 40%,#8b7bb4 72%,#6c6189 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.45),0 0 24px var(--ceed-glow); }
+.ceed-wordmark,.logo,.brand strong,.brand-text strong { font-family:var(--font-geist-mono,ui-monospace),"SFMono-Regular",Consolas,monospace;letter-spacing:.13em;font-weight:500; }
+.ceed-product { color:var(--ceed-muted);font-weight:400;letter-spacing:.12em; }
+.sidebar,.flow-rail,.topbar,.app-header,.composer,.bottom-nav-inner,.mobile-nav { background:var(--ceed-panel);border-color:var(--ceed-line);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px); }
+.panel,.dashboard-card,.daily-hero,.guided-step,.weekly-section,.cloud-panel,.calendar-panel,.agent-panel,.agent-chat,.notes-panel,.week-overview,.login-card,.stat-card,.exercise-card { background:var(--ceed-panel);border-color:var(--ceed-line);box-shadow:var(--ceed-shadow);border-radius:22px; }
+input,textarea,select { accent-color:var(--ceed-accent); }
+.record-field input,.record-field textarea,.notes-ta,.signin-form input,.composer textarea,.training-coach textarea { color:var(--ceed-text);background:var(--ceed-input);border-color:var(--ceed-line);border-radius:16px; }
+.agent-message.user { max-width:88%;margin-left:auto;background:var(--ceed-raised);border:1px solid var(--ceed-line);border-radius:20px 20px 5px 20px; }
+.agent-message.assistant { border:0;background:transparent;padding-left:4px;box-shadow:none; }
+.agent-chat-history { padding:4px; }
+.handoff-buttons button,.cloud-panel button,.calendar-panel button,.dashboard button,.step-controls button { border-radius:13px; }
+.dashboard .primary-action,.agent-chat button[type=submit]:not(:disabled),.login-card button[type=submit] { background:var(--ceed-solid);color:var(--ceed-on-accent);border-color:transparent;box-shadow:0 3px 18px var(--ceed-glow); }
+.daily-hero { background:linear-gradient(135deg,var(--ceed-panel),color-mix(in srgb,var(--ceed-glow) 35%,var(--ceed-panel))); }
+.daily-hero h1 { font-weight:450;letter-spacing:-.055em; }
+.flow-rail button.active,.day-tab.active { color:var(--ceed-text);background:var(--ceed-raised);border-color:var(--ceed-line-strong); }
+.eyebrow,.rail-title,.sidebar-section-label { font-family:var(--font-geist-mono,ui-monospace),ui-monospace,monospace;font-weight:450;font-size:9px;letter-spacing:.14em; }
+.ceed-login-theme { position:fixed;top:20px;right:24px;z-index:40; }
+@media(max-width:640px) { .ceed-theme-control { padding:5px 8px; }.ceed-login-theme{top:12px;right:14px;}.ceed-emblem{width:27px;height:27px;} }
+@media(prefers-reduced-motion:no-preference) { body,.panel,.dashboard-card,.sidebar,.topbar,.composer,input,textarea { transition:background-color .35s ease,color .25s ease,border-color .25s ease; } }
+html[data-theme] body { color:var(--ceed-text);background:radial-gradient(ellipse at 75% 0%,var(--ceed-glow),transparent 50%),radial-gradient(ellipse at 8% 12%,var(--ceed-peach),transparent 44%),var(--ceed-bg);background-attachment:fixed; }
+html[data-theme] .sidebar { background:var(--ceed-panel);border-color:var(--ceed-line);box-shadow:8px 0 45px var(--ceed-shadow); }
+html[data-theme] .topbar,html[data-theme] .mobile-nav,html[data-theme] .bottom-nav { background:var(--ceed-panel);border-color:var(--ceed-line); }
+html[data-theme] .app-shell,html[data-theme] .workspace,html[data-theme] .main-area { background:transparent;color:var(--ceed-text); }
+html[data-theme] .brand strong,html[data-theme] .brand-text strong,html[data-theme] .home-welcome h1,html[data-theme] .section-heading h2,html[data-theme] .topbar-breadcrumb strong { color:var(--ceed-text); }
+html[data-theme] .brand small,html[data-theme] .muted,html[data-theme] .intro,html[data-theme] .main-footer,html[data-theme] .app-footer,html[data-theme] .topbar-date { color:var(--ceed-muted); }
+html[data-theme] .sidebar nav button,html[data-theme] .nav-item { color:var(--ceed-muted); }
+html[data-theme] .sidebar nav button[aria-current=page],html[data-theme] .nav-item-active,html[data-theme] .history-list button.selected { background:var(--ceed-raised);color:var(--ceed-text);border-color:var(--ceed-line); }
+html[data-theme] .panel,html[data-theme] .login-card,html[data-theme] .composer { background:var(--ceed-panel);border-color:var(--ceed-line); }
+html[data-theme] .quiet,html[data-theme] .new-chat,html[data-theme] .topbar-timer-button,html[data-theme] .topbar-settings-button { background:var(--ceed-panel);color:var(--ceed-text);border-color:var(--ceed-line);border-radius:13px; }
+html[data-theme] .login-card input,html[data-theme] .panel input,html[data-theme] .set-row input,html[data-theme] .form-grid input,html[data-theme] .form-grid select,html[data-theme] .training-coach textarea { color:var(--ceed-text);background:var(--ceed-input);border-color:var(--ceed-line); }
+html[data-theme] .composer { border-radius:25px;box-shadow:0 8px 38px var(--ceed-glow); }
+html[data-theme] .composer textarea { color:var(--ceed-text);background:transparent;box-shadow:none;border:0; }
+html[data-theme] .composer select { color:var(--ceed-muted);background:transparent;border-color:var(--ceed-line); }
+html[data-theme] .send,html[data-theme] .button-primary { color:var(--ceed-on-accent);background:var(--ceed-solid);border-color:transparent; }
+html[data-theme] .message { color:var(--ceed-text);background:transparent;border:0;box-shadow:none; }
+html[data-theme] .message.user { background:var(--ceed-raised);border-radius:22px 22px 5px 22px;padding:18px 22px;max-width:85%;margin-left:auto; }
+html[data-theme] .message-label { color:var(--ceed-muted); }
+html[data-theme] .home-content,html[data-theme] .chat-content { max-width:890px; }
+html[data-theme] .home-welcome h1 { font-weight:450;letter-spacing:-.055em;font-size:clamp(32px,4vw,48px); }
+html[data-theme] .history-search input { color:var(--ceed-text);background:transparent; }
+html[data-theme] .workspace > .sidebar { width:254px; }
+html[data-theme] .workspace .main-area { margin-left:254px; }
+html[data-theme] .content { padding-inline:clamp(20px,4vw,48px); }
+html[data-theme] .status-dot { background:var(--ceed-accent);box-shadow:0 0 10px var(--ceed-glow); }
+html[data-theme] .button,html[data-theme] .topbar-actions button { border-radius:14px; }
+html[data-theme] .coach-answer { color:var(--ceed-text);background:var(--ceed-panel);border-color:var(--ceed-line); }
+html[data-theme] .training-coach form label,html[data-theme] .training-coach .muted,html[data-theme] .coach-answer small { color:var(--ceed-muted); }
+html[data-theme] .training-coach .coach-prompts button { color:var(--ceed-text);background:var(--ceed-panel);border-color:var(--ceed-line); }
+@media(max-width:760px) {
+  html[data-theme] .workspace .main-area { margin-left:0; }
+  html[data-theme] .workspace .sidebar { width:254px; }
+  html[data-theme] .topbar { height:auto;min-height:68px;padding:12px 16px;gap:10px;flex-wrap:wrap; }
+  html[data-theme] .private-badge { display:none; }
+  html[data-theme] .topbar-actions { flex-wrap:wrap;gap:7px; }
+  html[data-theme] .topbar-date { display:none; }
+  html[data-theme] .content { padding-inline:18px; }
+}
