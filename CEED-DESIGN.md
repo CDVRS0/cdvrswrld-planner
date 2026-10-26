@@ -19,3 +19,5 @@ Planner and training records continue using existing cloud sync.
 This work is on an isolated feature branch and is presented in Preview first.
 
 The follow-up layout pass moves connection and calendar controls into one expandable area with an always-visible cloud status, removes duplicate mobile navigation, simplifies the weekday strip, and places the CEED planning composer above the task and schedule panels. Daily OS navigation and approval flows remain available.
+
+The shared lavender character launcher opens the selected day's existing cloud-saved Handoff conversation. Context review and approval gates remain in place. The launcher can be dragged, moved with Shift+Arrow keys, reset with Home and closed with Escape. The panel stays mounted when closed so replies can finish saving. Voice is not activated in this phase.

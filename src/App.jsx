@@ -1,3 +1,5 @@
+import CeedAssistantLauncher from './ceed/CeedAssistantLauncher';
+import './ceed/ceed-assistant.css';
 import { isOSPrompt } from './lib/daily-actions';
 import { CeedAppearance, ThemeControl } from './ceed/CeedAppearance';
 import { previousHandoff } from './lib/handoff';
@@ -415,6 +417,9 @@ export default function App() {
         })}
       </div>
 
+      <CeedAssistantLauncher key={`assistant:${c.user?.id || 'signed-out'}:${activeKey}`} title="CEED · Your day">
+        {c.ready ? <AgentChat day={activeDayData} dk={activeKey} section="handoff" p={{ ...p, canEdit: c.ready }} c={c} /> : <p>Sign in and connect your cloud Planner to chat with CEED about this day.</p>}
+      </CeedAssistantLauncher>
       <div className="planner-editor">
       {viewMode === 'day' ? (
         <GuidedDay key={`${c.user?.id || 'signed-out'}:${activeKey}`} cfg={activeCfg} dayDate={activeDate} dayData={activeDayData} p={{ ...p, canEdit: c.ready }} c={c} />
