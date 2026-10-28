@@ -375,7 +375,9 @@ export default function App() {
     <div className="app"><CeedAppearance />
       <header className="app-header">
         <div>
-          <div className="planner-brand"><span className="ceed-emblem" aria-hidden="true" /><div><div className="logo">CEED <span>PLANNER</span></div><div className="tagline">A LITTLE SPACE FOR YOUR DAY</div></div></div>
+      <CeedAssistantLauncher key={`assistant:${c.user?.id || 'signed-out'}:${activeKey}`} product="PLANNER" tagline="A LITTLE SPACE FOR YOUR DAY" title="CEED · Your day">
+        {c.ready ? <AgentChat day={activeDayData} dk={activeKey} section="handoff" p={{ ...p, canEdit: c.ready }} c={c} /> : <p>Sign in and connect your cloud Planner to chat with CEED about this day.</p>}
+      </CeedAssistantLauncher>
         </div>
         <div className="header-right">
           <ThemeControl />
@@ -417,9 +419,7 @@ export default function App() {
         })}
       </div>
 
-      <CeedAssistantLauncher key={`assistant:${c.user?.id || 'signed-out'}:${activeKey}`} title="CEED · Your day">
-        {c.ready ? <AgentChat day={activeDayData} dk={activeKey} section="handoff" p={{ ...p, canEdit: c.ready }} c={c} /> : <p>Sign in and connect your cloud Planner to chat with CEED about this day.</p>}
-      </CeedAssistantLauncher>
+
       <div className="planner-editor">
       {viewMode === 'day' ? (
         <GuidedDay key={`${c.user?.id || 'signed-out'}:${activeKey}`} cfg={activeCfg} dayDate={activeDate} dayData={activeDayData} p={{ ...p, canEdit: c.ready }} c={c} />
