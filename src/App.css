@@ -962,3 +962,8 @@ html[data-theme] .daily-focus button:disabled { opacity: .45; cursor: not-allowe
 .adaptive-timeline input { max-width: 7.8rem; }
 .adaptive-review li { overflow-wrap: anywhere; }
 @media (max-width: 600px) { .adaptive-planner { padding: 1rem; } .adaptive-presets button { flex: 1; } }
+
+.adaptive-review h4 { margin: 1.1rem 0 .5rem; }
+.adaptive-review ol, .adaptive-review ul { padding-left: 1.3rem; }
+.adaptive-review .adaptive-timeline { padding-left: 0; }
+.adaptive-hours input { border: 1px solid var(--border, #a99dbb); border-radius: 10px; background: var(--bg); color: inherit; }
