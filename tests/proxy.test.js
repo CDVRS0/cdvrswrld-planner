@@ -35,3 +35,8 @@ test('Production uses a fresh OIDC token on every call and never a Preview secre
  try{const first=await aiAccessHeaders('https://cdvrs-ai.vercel.app',async()=>`fresh-${++n}`),second=await aiAccessHeaders('https://cdvrs-ai.vercel.app',async()=>`fresh-${++n}`);assert.equal(first['x-vercel-trusted-oidc-idp-token'],'fresh-1');assert.equal(second['x-vercel-trusted-oidc-idp-token'],'fresh-2');assert.equal(first.Cookie,undefined);await assert.rejects(()=>aiAccessHeaders('https://cdvrs-ai.vercel.app',async()=>''));}
  finally{delete process.env.VERCEL_ENV;delete process.env.CDVRS_AI_PREVIEW_BYPASS;}
 });
+
+test('new Previews authenticate to CEED with fresh project tokens without a share secret', async()=>{
+ const {aiAccessHeaders}=await import('../server/ai-access.js'); process.env.VERCEL_ENV='preview'; delete process.env.CDVRS_AI_PREVIEW_BYPASS;
+ try { const headers=await aiAccessHeaders('https://matching-preview.vercel.app',async()=>'preview-token'); assert.equal(headers['x-vercel-trusted-oidc-idp-token'],'preview-token');assert.equal(headers.Cookie,undefined);await assert.rejects(()=>aiAccessHeaders('https://matching-preview.vercel.app',async()=>'')); } finally { delete process.env.VERCEL_ENV; }
+});
