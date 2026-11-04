@@ -1,3 +1,4 @@
+import AdaptivePlanner from './AdaptivePlanner';
 import DailyActions from './DailyActions';
 import { dailyActions, planningDay } from './lib/daily-actions';
 import HandoffActions, { IncomingHandoff, PreviousDayHandoff } from './HandoffActions';
@@ -72,10 +73,12 @@ export default function DailyDashboard({ day, dk, p, c, onContinue }) {
       <p>{new Date(`${dk}T12:00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
       <h1>What matters today?</h1>
       <p>{day.record?.plan?.objective || 'Set an intention, choose your priorities, and work through the day at your pace.'}</p>
-      <div className="daily-metrics"><span><strong>{model.unfinished.length}</strong> left this day</span><span><strong>{model.completed.length}</strong> complete</span><span><strong>{c.projects.filter(p => p.status === 'active').length}</strong> active projects</span></div>
+      <div className="daily-metrics"><span><strong>{day.record?.plan?.adaptive ? day.record.plan.adaptive.sessions.filter(s => s.key).length : model.unfinished.length}</strong> {day.record?.plan?.adaptive ? 'sessions planned' : 'left this day'}</span><span><strong>{model.completed.length}</strong> complete</span><span><strong>{c.projects.filter(p => p.status === 'active').length}</strong> active projects</span></div>
       <button className="primary-action" onClick={onContinue}>Open daily flow →</button>
     </section>
-    <section className="dashboard-card ai-card"><span className="eyebrow">CEED · YOU STAY IN CONTROL</span><h2>Let’s make room for your day.</h2><p>Ask for a practical plan using this day’s records, tasks and cloud projects. Suggestions stay here until you approve them.</p>
+    <AdaptivePlanner key={dk} day={day} dk={dk} p={p} c={c} model={model} zone={zone} />
+    <details className="dashboard-card ai-card"><summary>More CEED suggestions · individual tasks & blocks</summary><section>
+      <span className="eyebrow">CEED · YOU STAY IN CONTROL</span><h2>Let’s make room for your day.</h2><p>Ask for a practical plan using this day’s records, tasks and cloud projects. Suggestions stay here until you approve them.</p>
       <label className="record-field"><span>Your request</span><textarea aria-label="Your request" value={question} onChange={e => setQuestion(e.target.value)} maxLength={2000} /></label>
       <button disabled={!c.ready || c.status !== 'Saved to cloud' || busy || !question.trim()} onClick={organise}>{busy ? 'Working…' : 'Organise my day'}</button>
       {result && <div className="ai-result"><p style={{ whiteSpace: 'pre-wrap' }}>{result.summary}</p>{result.actions.map((a, i) => <article className="proposal" key={a.id}>
@@ -87,6 +90,7 @@ export default function DailyDashboard({ day, dk, p, c, onContinue }) {
       </article>)}</div>}
       {error && <p role="alert">{error}</p>}
     </section>
+    </details>
     <PreviousDayHandoff day={day} dk={dk} p={p} c={c} />
     <IncomingHandoff day={day} dk={dk} p={p} c={c} />
     <div className="dashboard-columns"><div><DailyActions model={model} day={day} dk={dk} p={p} c={c} />
@@ -99,6 +103,7 @@ export default function DailyDashboard({ day, dk, p, c, onContinue }) {
         <button disabled={!c.ready} onClick={() => { try {
           window.open(googleEventLink({ title: block.title, start: wallInstant(dk, block.start_time, zone), end: wallInstant(dk, block.end_time, zone) }), '_blank', 'noopener,noreferrer');
         } catch (e) { setError(e.message); } }}>Review in Google Calendar</button>
+        <button disabled={!c.ready} onClick={() => p.updateDayRecord(dk, 'plan', 'timeBlocks', timeBlocks.map(item => item.id === block.id ? { ...item, locked: !item.locked } : item))}>{block.locked ? 'Unlock block' : 'Lock time'}</button>
         <button disabled={!c.ready} onClick={() => p.updateDayRecord(dk, 'plan', 'timeBlocks', timeBlocks.filter(item => item.id !== block.id))}>Remove block</button>
       </div>)}</div><p className="schedule-note">Google opens an event draft. Save it there to add it to the Google calendar shown in Apple Calendar.</p></>}
       <label className="record-field"><span>Scheduled commitments</span><textarea aria-label="Scheduled commitments" disabled={!c.ready} value={day.record?.plan?.commitments || ''} onChange={e => p.updateDayRecord(dk, 'plan', 'commitments', e.target.value)} placeholder={'09:00 Client call\n14:00 Creative session'} /></label>

@@ -194,6 +194,7 @@ export function usePlanner() {
       items: section.items.filter((_, idx) => idx !== itemIndex),
     })),
     setNotes: v => updateWeek(w => ({ ...w, notes: v })),
+    replaceDayPlan: (dk, plan) => updateDay(dk, d => ({ ...d, record: { ...d.record, plan } })),
     updateDayRecord: (dk, sectionKey, field, value) => updateDay(dk, d => ({
       ...d,
       record: {

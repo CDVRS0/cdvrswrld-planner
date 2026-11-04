@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   try {
     const headers = { 'Content-Type': 'application/json', Authorization: authorization };
     Object.assign(headers, await aiAccessHeaders(process.env.CDVRS_AI_URL));
-    const upstream = await fetch(new URL(req.body?.operation === 'handoff' ? '/api/planner/handoff' : '/api/planner/organise', process.env.CDVRS_AI_URL), {
+    const upstream = await fetch(new URL(req.body?.operation === 'handoff' ? '/api/planner/handoff' : req.body?.operation === 'adapt' ? '/api/planner/adapt' : '/api/planner/organise', process.env.CDVRS_AI_URL), {
       method: 'POST', headers, body, signal: AbortSignal.timeout(100000),
     });
     const data = await upstream.json();
