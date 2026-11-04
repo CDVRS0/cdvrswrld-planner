@@ -946,3 +946,24 @@ html[data-theme] .daily-focus button:disabled { opacity: .45; cursor: not-allowe
 .daily-backlog { margin-top: 26px; }
 .daily-add-action { padding: 0 4px; }
 .plan-prompt-button { flex-shrink: 0; padding: 6px 8px; border: 1px solid var(--ceed-line); border-radius: 9px; background: var(--ceed-raised); color: var(--ceed-text); font-size: 10px; }
+
+/* Adaptive planning review; uses the existing CEED palette and cloud flow. */
+.adaptive-planner { grid-column: 1 / -1; border-color: color-mix(in srgb, var(--accent, #b5a1f1) 40%, transparent); }
+.adaptive-hours, .adaptive-presets { display: flex; flex-wrap: wrap; gap: .7rem; align-items: center; margin: .9rem 0; }
+.adaptive-hours label { display: grid; gap: .4rem; flex: 1; min-width: 150px; }
+.adaptive-hours input { width: auto; min-width: 0; max-width: 100%; padding: .6rem; }
+.adaptive-check { display: flex; align-items: flex-start; gap: .6rem; margin: 1rem 0; line-height: 1.5; }
+.adaptive-check input { width: auto; flex: 0 0 auto; margin-top: .3rem; }
+.adaptive-review, .adaptive-question { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px solid color-mix(in srgb, currentColor 18%, transparent); }
+.adaptive-comparison { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 1.2rem; }
+.adaptive-timeline { list-style: none; padding: 0; }
+.adaptive-timeline li { padding: .9rem; margin: .6rem 0; border-left: 3px solid #b5a1f1; background: color-mix(in srgb, #b5a1f1 7%, transparent); border-radius: 0 12px 12px 0; }
+.adaptive-timeline p { margin: .35rem 0; }
+.adaptive-timeline input { max-width: 7.8rem; }
+.adaptive-review li { overflow-wrap: anywhere; }
+@media (max-width: 600px) { .adaptive-planner { padding: 1rem; } .adaptive-presets button { flex: 1; } }
+
+.adaptive-review h4 { margin: 1.1rem 0 .5rem; }
+.adaptive-review ol, .adaptive-review ul { padding-left: 1.3rem; }
+.adaptive-review .adaptive-timeline { padding-left: 0; }
+.adaptive-hours input { border: 1px solid var(--border, #a99dbb); border-radius: 10px; background: var(--bg); color: inherit; }

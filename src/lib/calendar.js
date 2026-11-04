@@ -122,6 +122,12 @@ export function busyIntervals(day, date, zone) {
     result.push({ id: event.id, title: event.title, start: start <= dayStart ? 0 : minute(timeInZone(start, zone)),
       end: end >= dayEnd ? 1440 : minute(timeInZone(end, zone)) });
   }
+  const adaptive = day.record?.plan?.adaptive;
+  if (adaptive) {
+    for (const item of adaptive.unavailable || []) result.push({ title: item.title, start: minute(item.start_time), end: minute(item.end_time) });
+    if (minute(adaptive.start_time) > 0) result.push({ title: 'Before available hours', start: 0, end: minute(adaptive.start_time) });
+    if (minute(adaptive.end_time) < 1440) result.push({ title: 'After available hours', start: minute(adaptive.end_time), end: 1440 });
+  }
   return result;
 }
 

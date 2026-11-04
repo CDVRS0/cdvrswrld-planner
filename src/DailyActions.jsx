@@ -7,11 +7,14 @@ export default function DailyActions({ model, day, dk, p, c }) {
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [review, setReview] = useState(null), [selected, setSelected] = useState([]);
   const [approved, setApproved] = useState(false), [notice, setNotice] = useState('');
   const locked = busy || !c.ready || c.status !== 'Saved to cloud';
-  const priorityKeys = model.priorities.map(t => t.key);
+  const adaptive = day.record?.plan?.adaptive;
+  const priorityKeys = adaptive?.priorityKeys || model.priorities.map(t => t.key);
+  const displayedPriorities = priorityKeys.map(key => model.unfinished.find(t => t.key === key) || adaptive?.sessions.find(session => session.key === key && key.startsWith('weekly:'))).filter(Boolean).slice(0, 3);
   function pin(task) {
     const next = priorityKeys.includes(task.key) ? priorityKeys.filter(k => k !== task.key) : [...priorityKeys, task.key];
     if (next.length > 3) return;
-    p.updateDayRecord(dk, 'plan', 'priorityKeys', next);
+    if (day.record?.plan?.adaptive) p.replaceDayPlan(dk, { ...day.record.plan, priorityKeys: next, adaptive: { ...day.record.plan.adaptive, priorityKeys: next } });
+    else p.updateDayRecord(dk, 'plan', 'priorityKeys', next);
   }
   function preview(items) {
     setReview({ day: structuredClone(day), items: structuredClone(items) });
@@ -46,15 +49,16 @@ export default function DailyActions({ model, day, dk, p, c }) {
   }
   function row(task, backlog = false) {
     const pinned = priorityKeys.includes(task.key);
+    const deferred = day.record?.plan?.adaptive?.later?.some(item => item.key === task.key);
     return <div className="daily-action-row" key={task.key}>
-      <label><input type="checkbox" checked={false} disabled={locked} onChange={() => change([task], 'complete')} /><span>{task.title}<small>{task.label}{backlog && (task.sourceDate || task.scheduled_date || task.due_date) ? ` · ${task.sourceDate || task.scheduled_date || task.due_date}` : ''}</small></span></label>
+      <label><input type="checkbox" checked={false} disabled={locked} onChange={() => change([task], 'complete')} /><span>{task.title}<small>{deferred && !backlog ? 'Left unscheduled · ' : ''}{task.label}{backlog && (task.sourceDate || task.scheduled_date || task.due_date) ? ` · ${task.sourceDate || task.scheduled_date || task.due_date}` : ''}</small></span></label>
       <div className="daily-action-tools">{backlog ? <button disabled={locked} onClick={() => today(task)}>Add to this day</button> : <button disabled={locked || (!pinned && priorityKeys.length === 3)} aria-label={`${pinned ? 'Unpin' : 'Prioritise'} ${task.title}`} aria-pressed={pinned} onClick={() => pin(task)}>{pinned ? 'Unpin' : 'Prioritise'}</button>}
       <>{!backlog && <button disabled={locked} aria-label={`Delete ${task.title}`} onClick={() => preview([task])}>Delete</button>}</></div>
     </div>;
   }
   return <section className="dashboard-card daily-focus"><span className="eyebrow">FOCUS FIRST · UP TO THREE</span><h2>Your priorities</h2>
     <p className="schedule-note">Choose what matters for {dk}. OS prompts stay in the daily flow and do not count as tasks.</p>
-    <ol className="priority-slots">{[0, 1, 2].map(i => <li key={i}>{model.priorities[i] ? <><span>{model.priorities[i].title}</span><button disabled={locked} aria-label={`Unpin ${model.priorities[i].title}`} onClick={() => pin(model.priorities[i])}>Unpin</button></> : <span className="muted">Choose priority {i + 1} from your actions below</span>}</li>)}</ol>
+    <ol className="priority-slots">{[0, 1, 2].map(i => <li key={i}>{displayedPriorities[i] ? <><span>{displayedPriorities[i].title}</span>{<button disabled={locked} aria-label={`Unpin ${displayedPriorities[i].title}`} onClick={() => pin(displayedPriorities[i])}>Unpin</button>}</> : <span className="muted">Choose priority {i + 1} from your actions below</span>}</li>)}</ol>
     <h3>Actions for this day <span className="action-count">{model.unfinished.length}</span></h3>
     {!model.unfinished.length && <p className="schedule-note">A fresh start. Add an action below, or bring one in from your backlog.</p>}
     {model.unfinished.map(task => row(task))}

@@ -15,11 +15,12 @@ export async function previewCookie(base) {
   return cookie;
 }
 
-// Production uses a fresh, short-lived project token; never a Preview share secret.
+// Production and new Previews use fresh short-lived project tokens.
+// Existing deployment-scoped Preview share configurations remain compatible.
 export async function aiAccessHeaders(base, tokenReader = getVercelOidcToken) {
-  if (process.env.VERCEL_ENV === 'production') {
+  if (process.env.VERCEL_ENV === 'production' || (process.env.VERCEL_ENV === 'preview' && !process.env.CDVRS_AI_PREVIEW_BYPASS)) {
     const token = await tokenReader();
-    if (!token) throw new Error('Production project authentication is unavailable');
+    if (!token) throw new Error('Project authentication is unavailable');
     return { 'x-vercel-trusted-oidc-idp-token': token };
   }
   const cookie = await previewCookie(base);
